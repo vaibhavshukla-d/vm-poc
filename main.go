@@ -1,5 +1,7 @@
 //go:generate sh -c "mkdir -p internal/gen && go run github.com/ogen-go/ogen/cmd/ogen --clean --target internal/gen --config doc/ogen.yaml doc/openapi.yaml"
-//go:generate sh -c "mkdir -p internal/client_gen && go run github.com/ogen-go/ogen/cmd/ogen --clean --target internal/client_gen --config doc/client.ogen.yaml doc/client.yaml"
+//go:generate sh -c "mkdir -p internal/client/image_manager && go run github.com/ogen-go/ogen/cmd/ogen --clean --target internal/client/image_manager --package client --config doc/client.ogen.yaml doc/image-manager.yaml"
+//go:generate sh -c "mkdir -p internal/client/vm_monitor && go run github.com/ogen-go/ogen/cmd/ogen --clean --target internal/client/vm_monitor --package client --config doc/client.ogen.yaml doc/vm-monitor.yaml"
+//go:generate sh -c "mkdir -p internal/client/infra_monitor && go run github.com/ogen-go/ogen/cmd/ogen --clean --target internal/client/infra_monitor --package client --config doc/client.ogen.yaml doc/infra-monitor.yaml"
 package main
 
 import (
