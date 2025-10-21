@@ -17,9 +17,9 @@ type ApplicationConfigModal struct {
 
 type applicationConfig struct {
 	Application struct {
-		Name                  string `mapstructure:"name"`
-		Profile               string `mapstructure:"profile"`
-		Port                  string `mapstructure:"port"`
+		Name                    string `mapstructure:"name"`
+		Profile                 string `mapstructure:"profile"`
+		Port                    string `mapstructure:"port"`
 		ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
 		InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
 		VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`

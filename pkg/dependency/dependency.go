@@ -139,7 +139,7 @@ func Setup(ctx context.Context) (*Dependency, error) {
 	log.Info(constants.General, constants.Startup, "Logger initialized", nil)
 
 	// Initialize client dependencies
-	clientDeps, err := SetupClientDependencies(cfg)
+	clientDeps, err := SetupClientDependencies(cfg, log)
 	if err != nil {
 		return nil, err
 	}
