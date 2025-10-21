@@ -19,24 +19,24 @@ func SetUUID(model UUIDModel) {
 
 // VMRequest model
 type VMRequest struct {
-	RequestID       string     `gorm:"column:request_id;primaryKey;type:char(36)"`      // UUID stored as string
-	Operation       string     `gorm:"column:operation;not null;type:varchar(50)"`      // Operation type
-	RequestStatus   string     `gorm:"column:request_status;not null;type:varchar(50)"` // Status of the request
-	WorkspaceId     string     `gorm:"column:workspace_id;type:varchar(50);default:''"`
-	DatacenterId    string     `gorm:"column:datacenter_id;type:varchar(50);default:''"`
-	CreatedAt       time.Time  `gorm:"column:created_at;autoCreateTime;type:timestamp"` // Auto-set on creation
-	CompletedAt     *time.Time `gorm:"column:completed_at;type:timestamp"`              // Completion time
-	RequestMetadata string     `gorm:"column:request_metadata;type:text"`               // JSON stored as string
+	RequestID       string     `gorm:"column:request_id;primaryKey;type:char(36)" json:"request_id"`
+	Operation       string     `gorm:"column:operation;not null;type:varchar(50)" json:"operation"`
+	RequestStatus   string     `gorm:"column:request_status;not null;type:varchar(50)" json:"request_status"`
+	WorkspaceId     string     `gorm:"column:workspace_id;type:varchar(50);default:''" json:"workspace_id"`
+	DatacenterId    string     `gorm:"column:datacenter_id;type:varchar(50);default:''" json:"datacenter_id"`
+	CreatedAt       time.Time  `gorm:"column:created_at;autoCreateTime;type:timestamp" json:"created_at"`
+	CompletedAt     *time.Time `gorm:"column:completed_at;type:timestamp" json:"completed_at"`
+	RequestMetadata string     `gorm:"column:request_metadata;type:text" json:"request_metadata"`
 }
 
 // VMDeployInstance model
 type VMDeployInstance struct {
-	RequestID      string     `gorm:"column:request_id;primaryKey;type:char(36)"` // UUID primary key
-	VMID           string     `gorm:"column:vm_id;type:varchar(50)"`              // Optional VM identifier
-	VMName         string     `gorm:"column:vm_name;not null;type:varchar(255)"`  // Required VM name
-	VMStatus       string     `gorm:"column:vm_status;not null;type:varchar(50)"` // Optional status
-	VMStateMessage string     `gorm:"column:vm_state_message;type:text"`          // Optional message
-	CompletedAt    *time.Time `gorm:"column:completed_at;type:timestamp"`         //
+	RequestID      string     `gorm:"column:request_id;primaryKey;type:char(36)" json:"request_id"`
+	VMName         string     `gorm:"column:vm_name;primaryKey;type:varchar(255)" json:"vm_name"`
+	VMID           string     `gorm:"column:vm_id;type:varchar(50)" json:"vm_id"`
+	VMStatus       string     `gorm:"column:vm_status;not null;type:varchar(50)" json:"vm_status"`
+	VMStateMessage string     `gorm:"column:vm_state_message;type:text" json:"vm_state_message"`
+	CompletedAt    *time.Time `gorm:"column:completed_at;type:timestamp" json:"completed_at"`
 }
 
 // Implement UUIDModel for VMRequest

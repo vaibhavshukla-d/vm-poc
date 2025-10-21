@@ -21,6 +21,8 @@ type applicationConfig struct {
 		Profile               string `mapstructure:"profile"`
 		Port                  string `mapstructure:"port"`
 		ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
+		InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
+		VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`
 	} `mapstructure:"app"`
 	Database struct {
 		Host                  string `mapstructure:"host"`

@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"strconv"
-	"vm/internal/client"
 	"vm/pkg/cinterface"
 	configmanager "vm/pkg/config-manager"
 	"vm/pkg/constants"
@@ -15,10 +14,9 @@ import (
 type Dependency struct {
 	Ctx context.Context
 	*ClientDependency
-	Logger             cinterface.Logger
-	Database           db.Database
-	ImageManagerClient client.ImageManagerClient
-	Config             *configmanager.Config
+	Logger   cinterface.Logger
+	Database db.Database
+	Config   *configmanager.Config
 }
 
 // getEnv returns the environment variable or default value if not set
@@ -53,6 +51,8 @@ func Setup(ctx context.Context) (*Dependency, error) {
 	// Load App config from environment
 	appPort := getEnv("APP_PORT", "8080")
 	imageManagerServiceName := getEnv("IMAGE_MANAGER_SERVICE_NAME", "image-manager:8081")
+	infraMonitorServiceName := getEnv("INFRA_MONITOR_SERVICE_NAME", "infra-monitor:8082")
+	vmMonitorServiceName := getEnv("VM_MONITOR_SERVICE_NAME", "vm-monitor:8083")
 
 	// Build configuration
 	cfg := &configmanager.Config{
@@ -63,6 +63,8 @@ func Setup(ctx context.Context) (*Dependency, error) {
 					Profile                 string `mapstructure:"profile"`
 					Port                    string `mapstructure:"port"`
 					ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
+					InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
+					VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`
 				} `mapstructure:"app"`
 				Database struct {
 					Host                  string `mapstructure:"host"`
@@ -88,11 +90,15 @@ func Setup(ctx context.Context) (*Dependency, error) {
 					Profile                 string `mapstructure:"profile"`
 					Port                    string `mapstructure:"port"`
 					ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
+					InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
+					VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`
 				}{
 					Name:                    "vm",
 					Profile:                 "dev",
 					Port:                    appPort,
 					ImageManagerServiceName: imageManagerServiceName,
+					InfraMonitorServiceName: infraMonitorServiceName,
+					VmMonitorServiceName:    vmMonitorServiceName,
 				},
 				Database: struct {
 					Host                  string `mapstructure:"host"`
@@ -132,12 +138,8 @@ func Setup(ctx context.Context) (*Dependency, error) {
 	log := logger.NewLogger(cfg)
 	log.Info(constants.General, constants.Startup, "Logger initialized", nil)
 
-	// Initialize Image Manager Client
-	imageManagerClient := client.NewImageManagerClient()
-	log.Info(constants.General, constants.Startup, "Image Manager Client initialized", nil)
-
 	// Initialize client dependencies
-	clientDeps, err := SetupClientDependencies(cfg, log)
+	clientDeps, err := SetupClientDependencies(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -160,11 +162,10 @@ func Setup(ctx context.Context) (*Dependency, error) {
 	log.Info(constants.MySql, constants.Migration, "Migrations completed", nil)
 
 	return &Dependency{
-		Ctx:                ctx,
-		ClientDependency:   clientDeps,
-		Logger:             log,
-		Database:           database,
-		ImageManagerClient: imageManagerClient,
-		Config:             cfg,
+		Ctx:              ctx,
+		ClientDependency: clientDeps,
+		Logger:           log,
+		Database:         database,
+		Config:           cfg,
 	}, nil
 }

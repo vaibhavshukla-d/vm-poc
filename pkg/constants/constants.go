@@ -4,6 +4,9 @@ type Category string
 type SubCategory string
 type ExtraKey string
 
+type OperationType string
+type RequestStatus string
+
 const (
 	General         Category = "General"
 	IO              Category = "IO"
@@ -55,3 +58,20 @@ const (
 	ResponseBody ExtraKey = "ResponseBody"
 	ErrorMessage ExtraKey = "ErrorMessage"
 )
+
+const (
+	VMDeploy          OperationType = "VMDeploy"
+	VMPowerOff        OperationType = "VMPowerOff"
+	VMDelete          OperationType = "VMDelete"
+	VMPowerOn         OperationType = "VMPowerOn"
+	VMReset           OperationType = "VMReset"
+	VMRefresh         OperationType = "VMRefresh"
+	VMRestartGuestOS  OperationType = "VMRestartGuestOS"
+	VMShutdownGuestOS OperationType = "VMShutdownGuestOS"
+
+	StatusNew     RequestStatus = "NEW"
+	StatusPending RequestStatus = "PENDING"
+	StatusDone    RequestStatus = "DONE"
+)
+
+const VMRequestBasePath = "/virtualization/v1beta1/virtual-machines-request/"

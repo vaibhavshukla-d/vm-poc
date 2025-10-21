@@ -29,6 +29,7 @@ func NewVMRepository(db db.Database, logger cinterface.Logger) VMRepository {
 
 // CreateVMRequest creates a new VMRequest record in the database.
 func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMRequest) error {
+	r.logger.Info(constants.MySql, constants.Insert, "CreateVMRequest repository function invoked", nil)
 	db := r.db.GetReader()
 
 	result := db.WithContext(ctx).Create(req)
@@ -38,6 +39,10 @@ func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMReques
 		})
 		return result.Error
 	}
+
+	r.logger.Info(constants.MySql, constants.Insert, "VMRequest created successfully", map[constants.ExtraKey]interface{}{
+		"requestID": req.RequestID,
+	})
 
 	return nil
 }

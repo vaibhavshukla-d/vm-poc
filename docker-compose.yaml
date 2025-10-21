@@ -10,10 +10,12 @@ services:
       # Database connection (these match your Go env variable keys)
       - APP_PORT=8080
       - IMAGE_MANAGER_SERVICE_NAME=image-manager:8081
+      - INFRA_MONITOR_SERVICE_NAME=infra-monitor:8082
+      - VM_MONITOR_SERVICE_NAME=vm-monitor:8083
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=root
-      - DB_PASS=test@123      # match your Go code env key (DB_PASS)
+      - DB_PASS=test@123
       - DB_NAME=vmdb
       - DB_MAX_IDLE=10
       - DB_MAX_OPEN=100
@@ -43,6 +45,5 @@ services:
       retries: 5
     # volumes:
     #   - db_data:/var/lib/mysql
-
 # volumes:
 #   db_data:
