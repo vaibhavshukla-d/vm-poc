@@ -20,7 +20,7 @@ var once sync.Once
 var zeroSinLogger *zerolog.Logger
 
 type zeroLogger struct {
-	cfg    *configmanager.ApplicationConfigModal
+	cfg    configmanager.ApplicationConfig
 	logger *zerolog.Logger
 }
 
@@ -45,7 +45,7 @@ func newZeroLogger(cfg *configmanager.Config) *zeroLogger {
 }
 
 func (l *zeroLogger) getLogLevel() zerolog.Level {
-	level, exists := zeroLogLevelMapping[l.cfg.Application.Log.Level]
+	level, exists := zeroLogLevelMapping[l.cfg.Log.Level]
 	if !exists {
 		return zerolog.DebugLevel
 	}
@@ -61,7 +61,7 @@ func (l *zeroLogger) Init() {
 		var writers []io.Writer
 
 		// Add console writer if enabled
-		if l.cfg.Application.Log.EnableConsole {
+		if l.cfg.Log.EnableConsole {
 			consoleWriter := zerolog.ConsoleWriter{
 				Out:        os.Stdout,
 				TimeFormat: time.RFC3339,
@@ -70,8 +70,8 @@ func (l *zeroLogger) Init() {
 			writers = append(writers, consoleWriter)
 		}
 
-		if l.cfg.Application.Log.Level != "disabled" && l.cfg.Application.Log.EnableFile {
-			logDir := filepath.Join(l.cfg.Application.Log.FilePath, l.cfg.Application.Application.Name, "internal", time.Now().Format("2006-01-02"))
+		if l.cfg.Log.Level != "disabled" && l.cfg.Log.EnableFile {
+			logDir := filepath.Join(l.cfg.Log.FilePath, l.cfg.Application.Name, "internal", time.Now().Format("2006-01-02"))
 
 			// Ensure the directory exists
 			if err := os.MkdirAll(logDir, 0755); err != nil {
@@ -80,7 +80,7 @@ func (l *zeroLogger) Init() {
 
 			// Create full log file path
 			fileName := fmt.Sprintf("%s-%s.%s",
-				l.cfg.Application.Log.FileName,
+				l.cfg.Log.FileName,
 				uuid.New(),
 				"log")
 			fullPath := filepath.Join(logDir, fileName)
@@ -113,7 +113,7 @@ func (l *zeroLogger) Init() {
 		var logger = zerolog.New(mw).
 			With().
 			Timestamp().
-			Str("AppName", l.cfg.Application.Application.Name).
+			Str("AppName", l.cfg.Application.Name).
 			Str("LoggerName", "Zerolog").
 			Logger()
 

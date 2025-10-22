@@ -45,7 +45,7 @@ func main() {
 	}
 
 	// Start server
-	addr := ":" + deps.Config.App.Application.Application.Port
+	addr := ":" + deps.Config.App.Application.Port
 	httpServer := &http.Server{Addr: addr, Handler: server}
 
 	// Graceful shutdown

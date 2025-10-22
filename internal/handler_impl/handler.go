@@ -6,7 +6,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	imagemanager "vm/internal/client/image_manager"
+	inframonitor "vm/internal/client/infra_monitor"
 	vmmonitor "vm/internal/client/vm_monitor"
 	api "vm/internal/gen"
 	"vm/internal/service"
@@ -38,29 +40,20 @@ func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVM
 func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HCIDeployVMRes, error) {
 	h.deps.Logger.Infof("HCIDeployVM handler invoked")
 
-	if h.deps.Config.App.Application.Application.ValidateClientRequest {
-		// Image Manager Ogen client
-		imageClient := h.deps.ClientDependency.ImageManagerClient
+	// Validate image and get image path
+	imagePath, err := h.validateImage(ctx, req.ImageSource.Value.ImageId.Value)
+	if err != nil {
+		return &api.HCIDeployVMInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
+	req.ImageSource.Value.ImageName = api.NewOptString(imagePath)
 
-		// Create a new context with a 10-millisecond timeout.
-		timeoutCtx, cancel := context.WithTimeout(h.deps.Ctx, 10*time.Millisecond)
-		defer cancel()
-
-		// Attempt to get the image, expecting a timeout.
-		res, err := imageClient.GetImage(timeoutCtx, imagemanager.GetImageParams{ImageID: req.ImageSource.Value.ImageId.Value})
-		if err != nil {
-			// Check if the error is a timeout.
-			if errors.Is(timeoutCtx.Err(), context.DeadlineExceeded) {
-				h.deps.Logger.Warnf("Timeout occurred while getting image %s, but continuing execution as expected.", req.ImageSource.Value.ImageId.Value)
-			} else {
-				h.deps.Logger.Errorf("Failed to get image %s: %v", req.ImageSource.Value.ImageId.Value, err)
-				return &api.HCIDeployVMInternalServerError{
-					Message: "Failed to validate image",
-				}, nil
-			}
-		} else {
-			h.deps.Logger.Infof("Successfully validated image %s, response: %+v", req.ImageSource.Value.ImageId.Value, res)
-		}
+	// Validate host and cluster
+	if err := h.validateHost(ctx, req.Destination.Value.HostId.Value, req.Destination.Value.ClusterId.Value); err != nil {
+		return &api.HCIDeployVMInternalServerError{
+			Message: err.Error(),
+		}, nil
 	}
 
 	// Marshal the request to JSON to store as metadata
@@ -73,18 +66,9 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 		}, nil
 	}
 
-	//TODO Implement image ID validation
-	// res, err := imageClient.GetImage(ctx, client.GetImageParams{ImageID: req.ImageSource.Value.ImageId.Value})
-	// if err != nil {
-	// 	h.deps.Logger.Errorf("Failed to get image %s: %v", req.ImageSource.Value.ImageId.Value, err)
-	// } else {
-	// 	h.deps.Logger.Infof("Successfully validated image %s, response: %+v", req.ImageSource.Value.ImageId.Value, res)
-	// }
-
 	// Call the service to create the VM request
 	vmRequest, err := h.VMService.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, string(metadata))
 	if err != nil {
-
 		h.deps.Logger.Errorf("Failed to create VM Deploy request: %v", err)
 		return &api.HCIDeployVMInternalServerError{
 			Message: "Failed to create VM request",
@@ -338,13 +322,108 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 
 // GetVirtualMachineRequest implements the GetVirtualMachineRequest operation
 func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVirtualMachineRequestParams) (api.GetVirtualMachineRequestRes, error) {
-	// TODO: Implement get virtual machine request logic
-	panic("not implemented")
+	h.deps.Logger.Infof("GetVirtualMachineRequest handler invoked")
+
+	vmRequest, err := h.VMService.GetVMRequest(ctx, params.RequestID.String())
+	if err != nil {
+		h.deps.Logger.Errorf("Failed to get VM request: %v", err)
+		return &api.GetVirtualMachineRequestInternalServerError{
+			Message: "Failed to get VM request",
+		}, nil
+	}
+
+	var metadata api.VirtualMachineRequestRequestMetadata
+	if err := json.Unmarshal([]byte(vmRequest.RequestMetadata), &metadata); err != nil {
+		h.deps.Logger.Errorf("Failed to unmarshal request metadata: %v", err)
+		return &api.GetVirtualMachineRequestInternalServerError{
+			Message: "Failed to process request metadata",
+		}, nil
+	}
+
+	requestID, err := uuid.Parse(vmRequest.RequestID)
+	if err != nil {
+		h.deps.Logger.Errorf("Failed to parse request ID: %v", err)
+		return &api.GetVirtualMachineRequestInternalServerError{
+			Message: "Failed to parse request ID",
+		}, nil
+	}
+
+	return &api.VirtualMachineRequest{
+		RequestId:       requestID,
+		Operation:       api.VirtualMachineRequestOperation(vmRequest.Operation),
+		RequestStatus:   api.VirtualMachineRequestRequestStatus(vmRequest.RequestStatus),
+		RequestMetadata: metadata,
+		CreatedAt:       vmRequest.CreatedAt,
+		UpdatedAt:       vmRequest.CreatedAt, // Using CreatedAt since UpdatedAt is not available
+	}, nil
+}
+
+// validateImage checks if an image exists and returns its path.
+func (h *Handler) validateImage(ctx context.Context, imageID string) (string, error) {
+	if !h.deps.Config.App.Application.ValidateClientRequest {
+		return "", nil
+	}
+
+	imageClient := h.deps.ClientDependency.ImageManagerClient
+	res, err := imageClient.GetImage(ctx, imagemanager.GetImageParams{ImageID: imageID})
+	if err != nil {
+		h.deps.Logger.Errorf("Failed to get image %s: %v", imageID, err)
+		return "", errors.New("failed to validate image")
+	}
+
+	image, ok := res.(*imagemanager.Image)
+	if !ok {
+		return "", errors.New("unexpected response type for image validation")
+	}
+
+	h.deps.Logger.Infof("Successfully validated image %s, response: %+v", imageID, image)
+	return image.Name, nil
+}
+
+// validateHost checks if a host and cluster are active.
+func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) error {
+	if !h.deps.Config.App.Application.ValidateClientRequest {
+		return nil
+	}
+
+	infraClient := h.deps.ClientDependency.InfraMonitorClient
+
+	// Validate host
+	hostRes, err := infraClient.HypervisorHost(ctx, inframonitor.HypervisorHostParams{HostID: hostID})
+	if err != nil {
+		h.deps.Logger.Errorf("Failed to get host %s: %v", hostID, err)
+		return errors.New("failed to validate host")
+	}
+	host, ok := hostRes.(*inframonitor.HypervisorHost)
+	if !ok {
+		return errors.New("unexpected response type for host validation")
+	}
+	if host.Status.Value != "OK" {
+		return errors.New("host is not active")
+	}
+	h.deps.Logger.Infof("Successfully validated host %s", hostID)
+
+	// Validate cluster
+	clusterRes, err := infraClient.HypervisorCluster(ctx, inframonitor.HypervisorClusterParams{ClusterID: clusterID})
+	if err != nil {
+		h.deps.Logger.Errorf("Failed to get cluster %s: %v", clusterID, err)
+		return errors.New("failed to validate cluster")
+	}
+	cluster, ok := clusterRes.(*inframonitor.HypervisorCluster)
+	if !ok {
+		return errors.New("unexpected response type for cluster validation")
+	}
+	if cluster.Status.Value != "OK" {
+		return errors.New("cluster is not active")
+	}
+	h.deps.Logger.Infof("Successfully validated cluster %s", clusterID)
+
+	return nil
 }
 
 // validateVMExists checks if a VM exists using the vm_monitor client.
 func (h *Handler) validateVMExists(ctx context.Context, vmID string) error {
-	if !h.deps.Config.App.Application.Application.ValidateClientRequest {
+	if !h.deps.Config.App.Application.ValidateClientRequest {
 		return nil
 	}
 

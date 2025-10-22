@@ -29,7 +29,7 @@ func SetupClientDependencies(config *configmanager.Config, logger cinterface.Log
 	url := config.App.Application
 
 	// Initialize the image-manager client.
-	imageManagerClient, err := imagemanager.NewClient("http://"+url.Application.ImageManagerServiceName, imageManagerSecuritySource)
+	imageManagerClient, err := imagemanager.NewClient(url.ImageManagerServiceName, imageManagerSecuritySource)
 	if err != nil {
 		logger.Error("dependency", "setup", "Failed to create image-manager client", map[constants.ExtraKey]interface{}{constants.ErrorMessage: err})
 		return nil, err
@@ -37,7 +37,7 @@ func SetupClientDependencies(config *configmanager.Config, logger cinterface.Log
 	logger.Info("dependency", "setup", "Image-manager client initialized", nil)
 
 	// Initialize the infra-monitor client.
-	infraMonitorClient, err := inframonitor.NewClient("http://"+url.Application.InfraMonitorServiceName, infraMonitorSecuritySource)
+	infraMonitorClient, err := inframonitor.NewClient(url.InfraMonitorServiceName, infraMonitorSecuritySource)
 	if err != nil {
 		logger.Error("dependency", "setup", "Failed to create infra-monitor client", map[constants.ExtraKey]interface{}{constants.ErrorMessage: err})
 		return nil, err
@@ -45,7 +45,7 @@ func SetupClientDependencies(config *configmanager.Config, logger cinterface.Log
 	logger.Info("dependency", "setup", "Infra-monitor client initialized", nil)
 
 	// Initialize the vm-monitor client.
-	vmMonitorClient, err := vmmonitor.NewClient("http://"+url.Application.VmMonitorServiceName, vmMonitorSecuritySource)
+	vmMonitorClient, err := vmmonitor.NewClient(url.VmMonitorServiceName, vmMonitorSecuritySource)
 	if err != nil {
 		logger.Error("dependency", "setup", "Failed to create vm-monitor client", map[constants.ExtraKey]interface{}{constants.ErrorMessage: err})
 		return nil, err

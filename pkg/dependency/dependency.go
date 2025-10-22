@@ -57,55 +57,29 @@ func Setup(ctx context.Context) (*Dependency, error) {
 
 	// Build configuration
 	cfg := &configmanager.Config{
-		App: &configmanager.ApplicationConfigModal{
-			Application: configmanager.ApplicationConfig{
-				Application: struct {
-					Name                    string `mapstructure:"name"`
-					Profile                 string `mapstructure:"profile"`
-					Port                    string `mapstructure:"port"`
-					ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
-					InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
-					VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`
-					ValidateClientRequest   bool   `mapstructure:"validate_client_request"`
-				}{
-					Name:                    "vm",
-					Profile:                 "dev",
-					Port:                    appPort,
-					ImageManagerServiceName: imageManagerServiceName,
-					InfraMonitorServiceName: infraMonitorServiceName,
-					VmMonitorServiceName:    vmMonitorServiceName,
-					ValidateClientRequest:   validateClientRequest == "true",
-				},
-				Database: struct {
-					Host                  string `mapstructure:"host"`
-					Port                  int    `mapstructure:"port"`
-					DBName                string `mapstructure:"dbName"`
-					Username              string `mapstructure:"username"`
-					Password              string `mapstructure:"password"`
-					MaxIdleConnection     int    `mapstructure:"maxIdleConnection"`
-					MaxOpenConnection     int    `mapstructure:"maxOpenConnection"`
-					MaxConnectionLifeTime int    `mapstructure:"MaxConnectionLifeTime"`
-				}{
-					Host:                  dbHost,
-					Port:                  dbPort,
-					DBName:                dbName,
-					Username:              dbUser,
-					Password:              dbPass,
-					MaxIdleConnection:     maxIdle,
-					MaxOpenConnection:     maxOpen,
-					MaxConnectionLifeTime: connLife,
-				},
-				Log: struct {
-					Level         string `mapstructure:"Level"`
-					FilePath      string `mapstructure:"FilePath"`
-					FileName      string `mapstructure:"FileName"`
-					Encoding      string `mapstructure:"Encoding"`
-					EnableConsole bool   `mapstructure:"EnableConsole"`
-					EnableFile    bool   `mapstructure:"EnableFile"`
-				}{
-					Level:         "debug",
-					EnableConsole: true,
-				},
+		App: configmanager.ApplicationConfig{
+			Application: configmanager.Application{
+				Name:                    "vm",
+				Profile:                 "dev",
+				Port:                    appPort,
+				ImageManagerServiceName: imageManagerServiceName,
+				InfraMonitorServiceName: infraMonitorServiceName,
+				VmMonitorServiceName:    vmMonitorServiceName,
+				ValidateClientRequest:   validateClientRequest == "true",
+			},
+			Database: configmanager.Database{
+				Host:                  dbHost,
+				Port:                  dbPort,
+				DBName:                dbName,
+				Username:              dbUser,
+				Password:              dbPass,
+				MaxIdleConnection:     maxIdle,
+				MaxOpenConnection:     maxOpen,
+				MaxConnectionLifeTime: connLife,
+			},
+			Log: configmanager.Log{
+				Level:         "debug",
+				EnableConsole: true,
 			},
 		},
 	}
@@ -122,7 +96,7 @@ func Setup(ctx context.Context) (*Dependency, error) {
 
 	// Initialize database
 	database := db.NewDatabase(log)
-	_, err = database.InitDB(*cfg.App)
+	_, err = database.InitDB(cfg.App)
 	if err != nil {
 		log.Error(constants.MySql, constants.Startup, "Failed to connect to database", map[constants.ExtraKey]interface{}{"error": err})
 		return nil, err

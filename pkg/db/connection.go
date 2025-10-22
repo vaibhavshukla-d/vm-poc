@@ -14,7 +14,7 @@ import (
 )
 
 type Database interface {
-	InitDB(config configmanager.ApplicationConfigModal) (*gorm.DB, error)
+	InitDB(config configmanager.ApplicationConfig) (*gorm.DB, error)
 	GetReader() *gorm.DB
 	Ping(db *gorm.DB) error
 }
@@ -32,9 +32,9 @@ func NewDatabase(logger cinterface.Logger) Database {
 	}
 }
 
-func (rd *DatabaseImpl) InitDB(config configmanager.ApplicationConfigModal) (*gorm.DB, error) {
+func (rd *DatabaseImpl) InitDB(config configmanager.ApplicationConfig) (*gorm.DB, error) {
 	var err error
-	dsn := createDSN(config.Application.Database)
+	dsn := createDSN(config.Database)
 	rd.Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -45,9 +45,9 @@ func (rd *DatabaseImpl) InitDB(config configmanager.ApplicationConfigModal) (*go
 		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
 	}
 
-	sqlDB.SetMaxOpenConns(config.Application.Database.MaxOpenConnection)
-	sqlDB.SetMaxIdleConns(config.Application.Database.MaxIdleConnection)
-	sqlDB.SetConnMaxLifetime(time.Minute * time.Duration(config.Application.Database.MaxConnectionLifeTime))
+	sqlDB.SetMaxOpenConns(config.Database.MaxOpenConnection)
+	sqlDB.SetMaxIdleConns(config.Database.MaxIdleConnection)
+	sqlDB.SetConnMaxLifetime(time.Minute * time.Duration(config.Database.MaxConnectionLifeTime))
 
 	rd.lastPingTime = time.Now().UTC()
 	return rd.Db, nil
@@ -72,16 +72,7 @@ func (rd *DatabaseImpl) Ping(db *gorm.DB) error {
 	return pingErr
 }
 
-func createDSN(config struct {
-	Host                  string `mapstructure:"host"`
-	Port                  int    `mapstructure:"port"`
-	DBName                string `mapstructure:"dbName"`
-	Username              string `mapstructure:"username"`
-	Password              string `mapstructure:"password"`
-	MaxIdleConnection     int    `mapstructure:"maxIdleConnection"`
-	MaxOpenConnection     int    `mapstructure:"maxOpenConnection"`
-	MaxConnectionLifeTime int    `mapstructure:"MaxConnectionLifeTime"`
-}) string {
+func createDSN(config configmanager.Database) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		config.Username, config.Password, config.Host, config.Port, config.DBName,
 	)
