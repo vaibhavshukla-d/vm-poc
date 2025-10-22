@@ -616,7 +616,7 @@ paths:
               content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/VirtualMachineRequest'
+                    $ref: '#/components/schemas/VMRequestWithDeploy'
               description: Success
             '401':
               content:
@@ -1795,7 +1795,7 @@ components:
         - createdAt
         - updatedAt
       type: object
-    VirtualMachineRequest:
+    VMRequest:
       type: object
       properties:
         requestId:
@@ -1819,23 +1819,60 @@ components:
             - INPROGRESS
             - SUCCESS
             - FAILURE
+        workspaceId:
+          type: string
+        datacenterId:
+          type: string
         createdAt:
           type: string
           format: date-time
-        updatedAt:
+        completedAt:
           type: string
           format: date-time
+          nullable: true
         requestMetadata:
-          type: object
-          description: Metadata specific to the request
-          additionalProperties: true
+          type: string
+          description: JSON metadata stored as text
       required:
         - requestId
         - operation
         - requestStatus
         - createdAt
-        - updatedAt
         - requestMetadata
+    VMDeployInstance:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        vmId:
+          type: string
+        vmName:
+          type: string
+        vmStatus:
+          type: string
+        vmStateMessage:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - requestId
+        - vmName
+        - vmStatus
+    VMRequestWithDeploy:
+      type: object
+      properties:
+        vm_request:
+          $ref: '#/components/schemas/VMRequest'
+        vm_deploy_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/VMDeployInstance'
+      required:
+        - vm_request
+        - vm_deploy_list
     VmProtectionGroupInfo:
       description: Information of the Virtual Machine Protection Group.
       properties:

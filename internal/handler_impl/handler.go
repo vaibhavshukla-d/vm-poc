@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	imagemanager "vm/internal/client/image_manager"
 	inframonitor "vm/internal/client/infra_monitor"
 	vmmonitor "vm/internal/client/vm_monitor"
 	api "vm/internal/gen"
+	"vm/internal/modals"
 	"vm/internal/service"
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
@@ -324,20 +326,25 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVirtualMachineRequestParams) (api.GetVirtualMachineRequestRes, error) {
 	h.deps.Logger.Infof("GetVirtualMachineRequest handler invoked")
 
-	vmRequest, err := h.VMService.GetVMRequest(ctx, params.RequestID.String())
+	requestIDStr := params.RequestID.String()
+
+	vmRequest, err := h.VMService.GetVMRequest(ctx, requestIDStr)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &api.GetVirtualMachineRequestNotFound{
+				Message: "VM request not found",
+			}, nil
+		}
 		h.deps.Logger.Errorf("Failed to get VM request: %v", err)
 		return &api.GetVirtualMachineRequestInternalServerError{
 			Message: "Failed to get VM request",
 		}, nil
 	}
 
-	var metadata api.VirtualMachineRequestRequestMetadata
-	if err := json.Unmarshal([]byte(vmRequest.RequestMetadata), &metadata); err != nil {
-		h.deps.Logger.Errorf("Failed to unmarshal request metadata: %v", err)
-		return &api.GetVirtualMachineRequestInternalServerError{
-			Message: "Failed to process request metadata",
-		}, nil
+	deployInstances, err := h.VMService.GetVMDeployInstances(ctx, requestIDStr)
+	if err != nil {
+		h.deps.Logger.Warnf("Failed to get VM deploy instances, but continuing execution as they are optional: %v", err)
+		deployInstances = []*modals.VMDeployInstance{} // Initialize with an empty slice
 	}
 
 	requestID, err := uuid.Parse(vmRequest.RequestID)
@@ -348,13 +355,43 @@ func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVi
 		}, nil
 	}
 
-	return &api.VirtualMachineRequest{
+	apiVMRequest := api.VMRequest{
 		RequestId:       requestID,
-		Operation:       api.VirtualMachineRequestOperation(vmRequest.Operation),
-		RequestStatus:   api.VirtualMachineRequestRequestStatus(vmRequest.RequestStatus),
-		RequestMetadata: metadata,
+		Operation:       api.VMRequestOperation(vmRequest.Operation),
+		RequestStatus:   api.VMRequestRequestStatus(vmRequest.RequestStatus),
+		WorkspaceId:     api.NewOptString(vmRequest.WorkspaceId),
+		DatacenterId:    api.NewOptString(vmRequest.DatacenterId),
 		CreatedAt:       vmRequest.CreatedAt,
-		UpdatedAt:       vmRequest.CreatedAt, // Using CreatedAt since UpdatedAt is not available
+		RequestMetadata: vmRequest.RequestMetadata,
+	}
+	if vmRequest.CompletedAt != nil {
+		apiVMRequest.CompletedAt = api.NewOptNilDateTime(*vmRequest.CompletedAt)
+	}
+
+	apiDeployList := make([]api.VMDeployInstance, len(deployInstances))
+	for i, inst := range deployInstances {
+		instanceRequestID, err := uuid.Parse(inst.RequestID)
+		if err != nil {
+			h.deps.Logger.Errorf("Failed to parse instance request ID: %v", err)
+			return &api.GetVirtualMachineRequestInternalServerError{
+				Message: "Failed to parse instance request ID",
+			}, nil
+		}
+		apiDeployList[i] = api.VMDeployInstance{
+			RequestId:      instanceRequestID,
+			VmId:           api.NewOptString(inst.VMID),
+			VmName:         inst.VMName,
+			VmStatus:       inst.VMStatus,
+			VmStateMessage: api.NewOptString(inst.VMStateMessage),
+		}
+		if inst.CompletedAt != nil {
+			apiDeployList[i].CompletedAt = api.NewOptNilDateTime(*inst.CompletedAt)
+		}
+	}
+
+	return &api.VMRequestWithDeploy{
+		VMRequest:    apiVMRequest,
+		VMDeployList: apiDeployList,
 	}, nil
 }
 

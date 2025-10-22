@@ -6,12 +6,15 @@ import (
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
 	"vm/pkg/db"
+
+	"gorm.io/gorm"
 )
 
 // VMRepository defines the interface for VM database operations.
 type VMRepository interface {
 	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
+	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
 }
 
 // vmRepository implements the VMRepository interface.
@@ -61,10 +64,35 @@ func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*mod
 		})
 		return nil, result.Error
 	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
 
 	r.logger.Info(constants.MySql, constants.Select, "VMRequest retrieved successfully", map[constants.ExtraKey]interface{}{
 		"requestID": req.RequestID,
 	})
 
 	return &req, nil
+}
+
+// GetVMDeployInstances retrieves all VMDeployInstance records from the database by request ID.
+func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error) {
+	r.logger.Info(constants.MySql, constants.Select, "GetVMDeployInstances repository function invoked", nil)
+	db := r.db.GetReader()
+
+	var instances []*modals.VMDeployInstance
+	result := db.WithContext(ctx).Where("request_id = ?", requestID).Find(&instances)
+	if result.Error != nil {
+		r.logger.Error(constants.MySql, constants.Select, "Failed to get VMDeployInstances", map[constants.ExtraKey]interface{}{
+			"error": result.Error.Error(),
+		})
+		return nil, result.Error
+	}
+
+	r.logger.Info(constants.MySql, constants.Select, "VMDeployInstances retrieved successfully", map[constants.ExtraKey]interface{}{
+		"requestID": requestID,
+		"count":     len(instances),
+	})
+
+	return instances, nil
 }

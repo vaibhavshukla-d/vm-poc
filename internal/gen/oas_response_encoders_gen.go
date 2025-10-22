@@ -135,7 +135,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 
 func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes, w http.ResponseWriter) error {
 	switch response := response.(type) {
-	case *VirtualMachineRequest:
+	case *VMRequestWithDeploy:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 

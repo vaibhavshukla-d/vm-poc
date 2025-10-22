@@ -12,6 +12,7 @@ import (
 type VMService interface {
 	CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, error)
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
+	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
 }
 
 // vmService implements the VMService interface.
@@ -55,6 +56,23 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 	s.logger.Info(constants.Internal, constants.Api, "Successfully created VM request", nil)
 
 	return vmRequest, nil
+}
+
+// GetVMDeployInstances handles the business logic for retrieving VM deploy instances.
+func (s *vmService) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error) {
+	s.logger.Info(constants.Internal, constants.Api, "GetVMDeployInstances service function invoked", nil)
+
+	instances, err := s.vmRepo.GetVMDeployInstances(ctx, requestID)
+	if err != nil {
+		s.logger.Error(constants.Internal, constants.Api, "Failed to get VM deploy instances", map[constants.ExtraKey]interface{}{
+			"error": err.Error(),
+		})
+		return nil, err
+	}
+
+	s.logger.Info(constants.Internal, constants.Api, "Successfully retrieved VM deploy instances", nil)
+
+	return instances, nil
 }
 
 // GetVMRequest handles the business logic for retrieving a VM request.

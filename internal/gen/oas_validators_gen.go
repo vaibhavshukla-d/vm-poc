@@ -560,7 +560,7 @@ func (s HCIDeployVMVmPolicyItemType) Validate() error {
 	}
 }
 
-func (s *VirtualMachineRequest) Validate() error {
+func (s *VMRequest) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -594,7 +594,7 @@ func (s *VirtualMachineRequest) Validate() error {
 	return nil
 }
 
-func (s VirtualMachineRequestOperation) Validate() error {
+func (s VMRequestOperation) Validate() error {
 	switch s {
 	case "vmDeploy":
 		return nil
@@ -617,7 +617,7 @@ func (s VirtualMachineRequestOperation) Validate() error {
 	}
 }
 
-func (s VirtualMachineRequestRequestStatus) Validate() error {
+func (s VMRequestRequestStatus) Validate() error {
 	switch s {
 	case "NEW":
 		return nil
@@ -630,4 +630,38 @@ func (s VirtualMachineRequestRequestStatus) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s *VMRequestWithDeploy) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.VMRequest.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "vm_request",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if s.VMDeployList == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "vm_deploy_list",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
 }

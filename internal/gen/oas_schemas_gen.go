@@ -1953,6 +1953,69 @@ func (o OptInt) Or(d int) int {
 	return d
 }
 
+// NewOptNilDateTime returns new OptNilDateTime with value set to v.
+func NewOptNilDateTime(v time.Time) OptNilDateTime {
+	return OptNilDateTime{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilDateTime is optional nullable time.Time.
+type OptNilDateTime struct {
+	Value time.Time
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilDateTime was set.
+func (o OptNilDateTime) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilDateTime) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilDateTime) SetTo(v time.Time) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilDateTime) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilDateTime) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v time.Time
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilDateTime) Get() (v time.Time, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -2026,6 +2089,76 @@ func (*VMDeleteServiceUnavailable) vMDeleteRes() {}
 type VMDeleteUnauthorized ErrorResponse
 
 func (*VMDeleteUnauthorized) vMDeleteRes() {}
+
+// Ref: #/components/schemas/VMDeployInstance
+type VMDeployInstance struct {
+	RequestId      uuid.UUID      `json:"requestId"`
+	VmId           OptString      `json:"vmId"`
+	VmName         string         `json:"vmName"`
+	VmStatus       string         `json:"vmStatus"`
+	VmStateMessage OptString      `json:"vmStateMessage"`
+	CompletedAt    OptNilDateTime `json:"completedAt"`
+}
+
+// GetRequestId returns the value of RequestId.
+func (s *VMDeployInstance) GetRequestId() uuid.UUID {
+	return s.RequestId
+}
+
+// GetVmId returns the value of VmId.
+func (s *VMDeployInstance) GetVmId() OptString {
+	return s.VmId
+}
+
+// GetVmName returns the value of VmName.
+func (s *VMDeployInstance) GetVmName() string {
+	return s.VmName
+}
+
+// GetVmStatus returns the value of VmStatus.
+func (s *VMDeployInstance) GetVmStatus() string {
+	return s.VmStatus
+}
+
+// GetVmStateMessage returns the value of VmStateMessage.
+func (s *VMDeployInstance) GetVmStateMessage() OptString {
+	return s.VmStateMessage
+}
+
+// GetCompletedAt returns the value of CompletedAt.
+func (s *VMDeployInstance) GetCompletedAt() OptNilDateTime {
+	return s.CompletedAt
+}
+
+// SetRequestId sets the value of RequestId.
+func (s *VMDeployInstance) SetRequestId(val uuid.UUID) {
+	s.RequestId = val
+}
+
+// SetVmId sets the value of VmId.
+func (s *VMDeployInstance) SetVmId(val OptString) {
+	s.VmId = val
+}
+
+// SetVmName sets the value of VmName.
+func (s *VMDeployInstance) SetVmName(val string) {
+	s.VmName = val
+}
+
+// SetVmStatus sets the value of VmStatus.
+func (s *VMDeployInstance) SetVmStatus(val string) {
+	s.VmStatus = val
+}
+
+// SetVmStateMessage sets the value of VmStateMessage.
+func (s *VMDeployInstance) SetVmStateMessage(val OptString) {
+	s.VmStateMessage = val
+}
+
+// SetCompletedAt sets the value of CompletedAt.
+func (s *VMDeployInstance) SetCompletedAt(val OptNilDateTime) {
+	s.CompletedAt = val
+}
 
 type VMPowerOffBadRequest ErrorResponse
 
@@ -2131,6 +2264,265 @@ type VMRefreshUnauthorized ErrorResponse
 
 func (*VMRefreshUnauthorized) vMRefreshRes() {}
 
+// Ref: #/components/schemas/VMRequest
+type VMRequest struct {
+	RequestId     uuid.UUID              `json:"requestId"`
+	Operation     VMRequestOperation     `json:"operation"`
+	RequestStatus VMRequestRequestStatus `json:"requestStatus"`
+	WorkspaceId   OptString              `json:"workspaceId"`
+	DatacenterId  OptString              `json:"datacenterId"`
+	CreatedAt     time.Time              `json:"createdAt"`
+	CompletedAt   OptNilDateTime         `json:"completedAt"`
+	// JSON metadata stored as text.
+	RequestMetadata string `json:"requestMetadata"`
+}
+
+// GetRequestId returns the value of RequestId.
+func (s *VMRequest) GetRequestId() uuid.UUID {
+	return s.RequestId
+}
+
+// GetOperation returns the value of Operation.
+func (s *VMRequest) GetOperation() VMRequestOperation {
+	return s.Operation
+}
+
+// GetRequestStatus returns the value of RequestStatus.
+func (s *VMRequest) GetRequestStatus() VMRequestRequestStatus {
+	return s.RequestStatus
+}
+
+// GetWorkspaceId returns the value of WorkspaceId.
+func (s *VMRequest) GetWorkspaceId() OptString {
+	return s.WorkspaceId
+}
+
+// GetDatacenterId returns the value of DatacenterId.
+func (s *VMRequest) GetDatacenterId() OptString {
+	return s.DatacenterId
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *VMRequest) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// GetCompletedAt returns the value of CompletedAt.
+func (s *VMRequest) GetCompletedAt() OptNilDateTime {
+	return s.CompletedAt
+}
+
+// GetRequestMetadata returns the value of RequestMetadata.
+func (s *VMRequest) GetRequestMetadata() string {
+	return s.RequestMetadata
+}
+
+// SetRequestId sets the value of RequestId.
+func (s *VMRequest) SetRequestId(val uuid.UUID) {
+	s.RequestId = val
+}
+
+// SetOperation sets the value of Operation.
+func (s *VMRequest) SetOperation(val VMRequestOperation) {
+	s.Operation = val
+}
+
+// SetRequestStatus sets the value of RequestStatus.
+func (s *VMRequest) SetRequestStatus(val VMRequestRequestStatus) {
+	s.RequestStatus = val
+}
+
+// SetWorkspaceId sets the value of WorkspaceId.
+func (s *VMRequest) SetWorkspaceId(val OptString) {
+	s.WorkspaceId = val
+}
+
+// SetDatacenterId sets the value of DatacenterId.
+func (s *VMRequest) SetDatacenterId(val OptString) {
+	s.DatacenterId = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *VMRequest) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// SetCompletedAt sets the value of CompletedAt.
+func (s *VMRequest) SetCompletedAt(val OptNilDateTime) {
+	s.CompletedAt = val
+}
+
+// SetRequestMetadata sets the value of RequestMetadata.
+func (s *VMRequest) SetRequestMetadata(val string) {
+	s.RequestMetadata = val
+}
+
+type VMRequestOperation string
+
+const (
+	VMRequestOperationVmDeploy      VMRequestOperation = "vmDeploy"
+	VMRequestOperationVmReconfigure VMRequestOperation = "vmReconfigure"
+	VMRequestOperationVmPowerOn     VMRequestOperation = "vmPowerOn"
+	VMRequestOperationVmPowerOff    VMRequestOperation = "vmPowerOff"
+	VMRequestOperationVmReset       VMRequestOperation = "vmReset"
+	VMRequestOperationVmRestart     VMRequestOperation = "vmRestart"
+	VMRequestOperationVmShutdown    VMRequestOperation = "vmShutdown"
+	VMRequestOperationVmDelete      VMRequestOperation = "vmDelete"
+)
+
+// AllValues returns all VMRequestOperation values.
+func (VMRequestOperation) AllValues() []VMRequestOperation {
+	return []VMRequestOperation{
+		VMRequestOperationVmDeploy,
+		VMRequestOperationVmReconfigure,
+		VMRequestOperationVmPowerOn,
+		VMRequestOperationVmPowerOff,
+		VMRequestOperationVmReset,
+		VMRequestOperationVmRestart,
+		VMRequestOperationVmShutdown,
+		VMRequestOperationVmDelete,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s VMRequestOperation) MarshalText() ([]byte, error) {
+	switch s {
+	case VMRequestOperationVmDeploy:
+		return []byte(s), nil
+	case VMRequestOperationVmReconfigure:
+		return []byte(s), nil
+	case VMRequestOperationVmPowerOn:
+		return []byte(s), nil
+	case VMRequestOperationVmPowerOff:
+		return []byte(s), nil
+	case VMRequestOperationVmReset:
+		return []byte(s), nil
+	case VMRequestOperationVmRestart:
+		return []byte(s), nil
+	case VMRequestOperationVmShutdown:
+		return []byte(s), nil
+	case VMRequestOperationVmDelete:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *VMRequestOperation) UnmarshalText(data []byte) error {
+	switch VMRequestOperation(data) {
+	case VMRequestOperationVmDeploy:
+		*s = VMRequestOperationVmDeploy
+		return nil
+	case VMRequestOperationVmReconfigure:
+		*s = VMRequestOperationVmReconfigure
+		return nil
+	case VMRequestOperationVmPowerOn:
+		*s = VMRequestOperationVmPowerOn
+		return nil
+	case VMRequestOperationVmPowerOff:
+		*s = VMRequestOperationVmPowerOff
+		return nil
+	case VMRequestOperationVmReset:
+		*s = VMRequestOperationVmReset
+		return nil
+	case VMRequestOperationVmRestart:
+		*s = VMRequestOperationVmRestart
+		return nil
+	case VMRequestOperationVmShutdown:
+		*s = VMRequestOperationVmShutdown
+		return nil
+	case VMRequestOperationVmDelete:
+		*s = VMRequestOperationVmDelete
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type VMRequestRequestStatus string
+
+const (
+	VMRequestRequestStatusNEW        VMRequestRequestStatus = "NEW"
+	VMRequestRequestStatusINPROGRESS VMRequestRequestStatus = "INPROGRESS"
+	VMRequestRequestStatusSUCCESS    VMRequestRequestStatus = "SUCCESS"
+	VMRequestRequestStatusFAILURE    VMRequestRequestStatus = "FAILURE"
+)
+
+// AllValues returns all VMRequestRequestStatus values.
+func (VMRequestRequestStatus) AllValues() []VMRequestRequestStatus {
+	return []VMRequestRequestStatus{
+		VMRequestRequestStatusNEW,
+		VMRequestRequestStatusINPROGRESS,
+		VMRequestRequestStatusSUCCESS,
+		VMRequestRequestStatusFAILURE,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s VMRequestRequestStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case VMRequestRequestStatusNEW:
+		return []byte(s), nil
+	case VMRequestRequestStatusINPROGRESS:
+		return []byte(s), nil
+	case VMRequestRequestStatusSUCCESS:
+		return []byte(s), nil
+	case VMRequestRequestStatusFAILURE:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *VMRequestRequestStatus) UnmarshalText(data []byte) error {
+	switch VMRequestRequestStatus(data) {
+	case VMRequestRequestStatusNEW:
+		*s = VMRequestRequestStatusNEW
+		return nil
+	case VMRequestRequestStatusINPROGRESS:
+		*s = VMRequestRequestStatusINPROGRESS
+		return nil
+	case VMRequestRequestStatusSUCCESS:
+		*s = VMRequestRequestStatusSUCCESS
+		return nil
+	case VMRequestRequestStatusFAILURE:
+		*s = VMRequestRequestStatusFAILURE
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/VMRequestWithDeploy
+type VMRequestWithDeploy struct {
+	VMRequest    VMRequest          `json:"vm_request"`
+	VMDeployList []VMDeployInstance `json:"vm_deploy_list"`
+}
+
+// GetVMRequest returns the value of VMRequest.
+func (s *VMRequestWithDeploy) GetVMRequest() VMRequest {
+	return s.VMRequest
+}
+
+// GetVMDeployList returns the value of VMDeployList.
+func (s *VMRequestWithDeploy) GetVMDeployList() []VMDeployInstance {
+	return s.VMDeployList
+}
+
+// SetVMRequest sets the value of VMRequest.
+func (s *VMRequestWithDeploy) SetVMRequest(val VMRequest) {
+	s.VMRequest = val
+}
+
+// SetVMDeployList sets the value of VMDeployList.
+func (s *VMRequestWithDeploy) SetVMDeployList(val []VMDeployInstance) {
+	s.VMDeployList = val
+}
+
+func (*VMRequestWithDeploy) getVirtualMachineRequestRes() {}
+
 type VMRestartGuestOSBadRequest ErrorResponse
 
 func (*VMRestartGuestOSBadRequest) vMRestartGuestOSRes() {}
@@ -2186,226 +2578,3 @@ func (*VMShutdownGuestOSServiceUnavailable) vMShutdownGuestOSRes() {}
 type VMShutdownGuestOSUnauthorized ErrorResponse
 
 func (*VMShutdownGuestOSUnauthorized) vMShutdownGuestOSRes() {}
-
-// Ref: #/components/schemas/VirtualMachineRequest
-type VirtualMachineRequest struct {
-	RequestId     uuid.UUID                          `json:"requestId"`
-	Operation     VirtualMachineRequestOperation     `json:"operation"`
-	RequestStatus VirtualMachineRequestRequestStatus `json:"requestStatus"`
-	CreatedAt     time.Time                          `json:"createdAt"`
-	UpdatedAt     time.Time                          `json:"updatedAt"`
-	// Metadata specific to the request.
-	RequestMetadata VirtualMachineRequestRequestMetadata `json:"requestMetadata"`
-}
-
-// GetRequestId returns the value of RequestId.
-func (s *VirtualMachineRequest) GetRequestId() uuid.UUID {
-	return s.RequestId
-}
-
-// GetOperation returns the value of Operation.
-func (s *VirtualMachineRequest) GetOperation() VirtualMachineRequestOperation {
-	return s.Operation
-}
-
-// GetRequestStatus returns the value of RequestStatus.
-func (s *VirtualMachineRequest) GetRequestStatus() VirtualMachineRequestRequestStatus {
-	return s.RequestStatus
-}
-
-// GetCreatedAt returns the value of CreatedAt.
-func (s *VirtualMachineRequest) GetCreatedAt() time.Time {
-	return s.CreatedAt
-}
-
-// GetUpdatedAt returns the value of UpdatedAt.
-func (s *VirtualMachineRequest) GetUpdatedAt() time.Time {
-	return s.UpdatedAt
-}
-
-// GetRequestMetadata returns the value of RequestMetadata.
-func (s *VirtualMachineRequest) GetRequestMetadata() VirtualMachineRequestRequestMetadata {
-	return s.RequestMetadata
-}
-
-// SetRequestId sets the value of RequestId.
-func (s *VirtualMachineRequest) SetRequestId(val uuid.UUID) {
-	s.RequestId = val
-}
-
-// SetOperation sets the value of Operation.
-func (s *VirtualMachineRequest) SetOperation(val VirtualMachineRequestOperation) {
-	s.Operation = val
-}
-
-// SetRequestStatus sets the value of RequestStatus.
-func (s *VirtualMachineRequest) SetRequestStatus(val VirtualMachineRequestRequestStatus) {
-	s.RequestStatus = val
-}
-
-// SetCreatedAt sets the value of CreatedAt.
-func (s *VirtualMachineRequest) SetCreatedAt(val time.Time) {
-	s.CreatedAt = val
-}
-
-// SetUpdatedAt sets the value of UpdatedAt.
-func (s *VirtualMachineRequest) SetUpdatedAt(val time.Time) {
-	s.UpdatedAt = val
-}
-
-// SetRequestMetadata sets the value of RequestMetadata.
-func (s *VirtualMachineRequest) SetRequestMetadata(val VirtualMachineRequestRequestMetadata) {
-	s.RequestMetadata = val
-}
-
-func (*VirtualMachineRequest) getVirtualMachineRequestRes() {}
-
-type VirtualMachineRequestOperation string
-
-const (
-	VirtualMachineRequestOperationVmDeploy      VirtualMachineRequestOperation = "vmDeploy"
-	VirtualMachineRequestOperationVmReconfigure VirtualMachineRequestOperation = "vmReconfigure"
-	VirtualMachineRequestOperationVmPowerOn     VirtualMachineRequestOperation = "vmPowerOn"
-	VirtualMachineRequestOperationVmPowerOff    VirtualMachineRequestOperation = "vmPowerOff"
-	VirtualMachineRequestOperationVmReset       VirtualMachineRequestOperation = "vmReset"
-	VirtualMachineRequestOperationVmRestart     VirtualMachineRequestOperation = "vmRestart"
-	VirtualMachineRequestOperationVmShutdown    VirtualMachineRequestOperation = "vmShutdown"
-	VirtualMachineRequestOperationVmDelete      VirtualMachineRequestOperation = "vmDelete"
-)
-
-// AllValues returns all VirtualMachineRequestOperation values.
-func (VirtualMachineRequestOperation) AllValues() []VirtualMachineRequestOperation {
-	return []VirtualMachineRequestOperation{
-		VirtualMachineRequestOperationVmDeploy,
-		VirtualMachineRequestOperationVmReconfigure,
-		VirtualMachineRequestOperationVmPowerOn,
-		VirtualMachineRequestOperationVmPowerOff,
-		VirtualMachineRequestOperationVmReset,
-		VirtualMachineRequestOperationVmRestart,
-		VirtualMachineRequestOperationVmShutdown,
-		VirtualMachineRequestOperationVmDelete,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s VirtualMachineRequestOperation) MarshalText() ([]byte, error) {
-	switch s {
-	case VirtualMachineRequestOperationVmDeploy:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmReconfigure:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmPowerOn:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmPowerOff:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmReset:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmRestart:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmShutdown:
-		return []byte(s), nil
-	case VirtualMachineRequestOperationVmDelete:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *VirtualMachineRequestOperation) UnmarshalText(data []byte) error {
-	switch VirtualMachineRequestOperation(data) {
-	case VirtualMachineRequestOperationVmDeploy:
-		*s = VirtualMachineRequestOperationVmDeploy
-		return nil
-	case VirtualMachineRequestOperationVmReconfigure:
-		*s = VirtualMachineRequestOperationVmReconfigure
-		return nil
-	case VirtualMachineRequestOperationVmPowerOn:
-		*s = VirtualMachineRequestOperationVmPowerOn
-		return nil
-	case VirtualMachineRequestOperationVmPowerOff:
-		*s = VirtualMachineRequestOperationVmPowerOff
-		return nil
-	case VirtualMachineRequestOperationVmReset:
-		*s = VirtualMachineRequestOperationVmReset
-		return nil
-	case VirtualMachineRequestOperationVmRestart:
-		*s = VirtualMachineRequestOperationVmRestart
-		return nil
-	case VirtualMachineRequestOperationVmShutdown:
-		*s = VirtualMachineRequestOperationVmShutdown
-		return nil
-	case VirtualMachineRequestOperationVmDelete:
-		*s = VirtualMachineRequestOperationVmDelete
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-// Metadata specific to the request.
-type VirtualMachineRequestRequestMetadata map[string]jx.Raw
-
-func (s *VirtualMachineRequestRequestMetadata) init() VirtualMachineRequestRequestMetadata {
-	m := *s
-	if m == nil {
-		m = map[string]jx.Raw{}
-		*s = m
-	}
-	return m
-}
-
-type VirtualMachineRequestRequestStatus string
-
-const (
-	VirtualMachineRequestRequestStatusNEW        VirtualMachineRequestRequestStatus = "NEW"
-	VirtualMachineRequestRequestStatusINPROGRESS VirtualMachineRequestRequestStatus = "INPROGRESS"
-	VirtualMachineRequestRequestStatusSUCCESS    VirtualMachineRequestRequestStatus = "SUCCESS"
-	VirtualMachineRequestRequestStatusFAILURE    VirtualMachineRequestRequestStatus = "FAILURE"
-)
-
-// AllValues returns all VirtualMachineRequestRequestStatus values.
-func (VirtualMachineRequestRequestStatus) AllValues() []VirtualMachineRequestRequestStatus {
-	return []VirtualMachineRequestRequestStatus{
-		VirtualMachineRequestRequestStatusNEW,
-		VirtualMachineRequestRequestStatusINPROGRESS,
-		VirtualMachineRequestRequestStatusSUCCESS,
-		VirtualMachineRequestRequestStatusFAILURE,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s VirtualMachineRequestRequestStatus) MarshalText() ([]byte, error) {
-	switch s {
-	case VirtualMachineRequestRequestStatusNEW:
-		return []byte(s), nil
-	case VirtualMachineRequestRequestStatusINPROGRESS:
-		return []byte(s), nil
-	case VirtualMachineRequestRequestStatusSUCCESS:
-		return []byte(s), nil
-	case VirtualMachineRequestRequestStatusFAILURE:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *VirtualMachineRequestRequestStatus) UnmarshalText(data []byte) error {
-	switch VirtualMachineRequestRequestStatus(data) {
-	case VirtualMachineRequestRequestStatusNEW:
-		*s = VirtualMachineRequestRequestStatusNEW
-		return nil
-	case VirtualMachineRequestRequestStatusINPROGRESS:
-		*s = VirtualMachineRequestRequestStatusINPROGRESS
-		return nil
-	case VirtualMachineRequestRequestStatusSUCCESS:
-		*s = VirtualMachineRequestRequestStatusSUCCESS
-		return nil
-	case VirtualMachineRequestRequestStatusFAILURE:
-		*s = VirtualMachineRequestRequestStatusFAILURE
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
