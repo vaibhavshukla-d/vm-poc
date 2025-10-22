@@ -12,10 +12,10 @@ type Config struct {
 	Logger cinterface.Logger
 }
 type ApplicationConfigModal struct {
-	Application applicationConfig `mapstructure:"application_config"`
+	Application ApplicationConfig `mapstructure:"application_config"`
 }
 
-type applicationConfig struct {
+type ApplicationConfig struct {
 	Application struct {
 		Name                    string `mapstructure:"name"`
 		Profile                 string `mapstructure:"profile"`
@@ -23,6 +23,7 @@ type applicationConfig struct {
 		ImageManagerServiceName string `mapstructure:"image_manager_service_name"`
 		InfraMonitorServiceName string `mapstructure:"infra_monitor_service_name"`
 		VmMonitorServiceName    string `mapstructure:"vm_monitor_service_name"`
+		ValidateClientRequest   bool   `mapstructure:"validate_client_request"`
 	} `mapstructure:"app"`
 	Database struct {
 		Host                  string `mapstructure:"host"`

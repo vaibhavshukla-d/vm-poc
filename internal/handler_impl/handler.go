@@ -3,8 +3,11 @@ package handler_impl
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
+
 	imagemanager "vm/internal/client/image_manager"
+	vmmonitor "vm/internal/client/vm_monitor"
 	api "vm/internal/gen"
 	"vm/internal/service"
 	"vm/pkg/constants"
@@ -33,27 +36,31 @@ func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVM
 
 // HCIDeployVM implements the HCIDeployVM operation
 func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HCIDeployVMRes, error) {
-
 	h.deps.Logger.Infof("HCIDeployVM handler invoked")
 
-	// Image Manager Ogen client
-	imageClient := h.deps.ClientDependency.ImageManagerClient
+	if h.deps.Config.App.Application.Application.ValidateClientRequest {
+		// Image Manager Ogen client
+		imageClient := h.deps.ClientDependency.ImageManagerClient
 
-	// Create a new context with a 10-millisecond timeout.
-	timeoutCtx, cancel := context.WithTimeout(h.deps.Ctx, 10*time.Millisecond)
-	defer cancel()
+		// Create a new context with a 10-millisecond timeout.
+		timeoutCtx, cancel := context.WithTimeout(h.deps.Ctx, 10*time.Millisecond)
+		defer cancel()
 
-	// Attempt to get the image, expecting a timeout.
-	res, err := imageClient.GetImage(timeoutCtx, imagemanager.GetImageParams{ImageID: req.ImageSource.Value.ImageId.Value})
-	if err != nil {
-		// Check if the error is a timeout.
-		if timeoutCtx.Err() == context.DeadlineExceeded {
-			h.deps.Logger.Warnf("Timeout occurred while getting image %s, but continuing execution as expected.", req.ImageSource.Value.ImageId.Value)
+		// Attempt to get the image, expecting a timeout.
+		res, err := imageClient.GetImage(timeoutCtx, imagemanager.GetImageParams{ImageID: req.ImageSource.Value.ImageId.Value})
+		if err != nil {
+			// Check if the error is a timeout.
+			if errors.Is(timeoutCtx.Err(), context.DeadlineExceeded) {
+				h.deps.Logger.Warnf("Timeout occurred while getting image %s, but continuing execution as expected.", req.ImageSource.Value.ImageId.Value)
+			} else {
+				h.deps.Logger.Errorf("Failed to get image %s: %v", req.ImageSource.Value.ImageId.Value, err)
+				return &api.HCIDeployVMInternalServerError{
+					Message: "Failed to validate image",
+				}, nil
+			}
 		} else {
-			h.deps.Logger.Errorf("Failed to get image %s: %v", req.ImageSource.Value.ImageId.Value, err)
+			h.deps.Logger.Infof("Successfully validated image %s, response: %+v", req.ImageSource.Value.ImageId.Value, res)
 		}
-	} else {
-		h.deps.Logger.Infof("Successfully validated image %s, response: %+v", req.ImageSource.Value.ImageId.Value, res)
 	}
 
 	// Marshal the request to JSON to store as metadata
@@ -98,6 +105,12 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.VMDeleteRes, error) {
 	h.deps.Logger.Infof("VMDelete handler invoked")
 
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMDeleteInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
+
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMDelete Request: %v", err)
@@ -122,8 +135,13 @@ func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.
 
 // VMPowerOff implements the VMPowerOff operation
 func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (api.VMPowerOffRes, error) {
-
 	h.deps.Logger.Infof("VMPowerOff handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMPowerOffInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -150,8 +168,13 @@ func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (
 
 // VMPowerOn implements the VMPowerOn operation
 func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (api.VMPowerOnRes, error) {
-
 	h.deps.Logger.Infof("VMPowerOn handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMPowerOnInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -179,8 +202,13 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 
 // VMPowerReset implements the VMPowerReset operation
 func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParams) (api.VMPowerResetRes, error) {
-
 	h.deps.Logger.Infof("VMPowerReset handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMPowerResetInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -208,8 +236,13 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 
 // VMRefresh implements the VMRefresh operation
 func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (api.VMRefreshRes, error) {
-
 	h.deps.Logger.Infof("VMRefresh handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMRefreshInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -237,8 +270,13 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 
 // VMRestartGuestOS implements the VMRestartGuestOS operation
 func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGuestOSParams) (api.VMRestartGuestOSRes, error) {
-
 	h.deps.Logger.Infof("VMRestartGuestOS handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMRestartGuestOSInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -266,8 +304,13 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 
 // VMShutdownGuestOS implements the VMShutdownGuestOS operation
 func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGuestOSParams) (api.VMShutdownGuestOSRes, error) {
-
 	h.deps.Logger.Infof("VMShutdownGuestOS handler invoked")
+
+	if err := h.validateVMExists(ctx, string(params.VMID)); err != nil {
+		return &api.VMShutdownGuestOSInternalServerError{
+			Message: err.Error(),
+		}, nil
+	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
@@ -297,4 +340,28 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVirtualMachineRequestParams) (api.GetVirtualMachineRequestRes, error) {
 	// TODO: Implement get virtual machine request logic
 	panic("not implemented")
+}
+
+// validateVMExists checks if a VM exists using the vm_monitor client.
+func (h *Handler) validateVMExists(ctx context.Context, vmID string) error {
+	if !h.deps.Config.App.Application.Application.ValidateClientRequest {
+		return nil
+	}
+
+	vmClient := h.deps.ClientDependency.VmMonitorClient
+	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Millisecond)
+	defer cancel()
+
+	res, err := vmClient.GetVm(timeoutCtx, vmmonitor.GetVmParams{VMID: vmID})
+	if err != nil {
+		if errors.Is(timeoutCtx.Err(), context.DeadlineExceeded) {
+			h.deps.Logger.Warnf("Timeout occurred while getting VM %s, but continuing execution as expected.", vmID)
+			return nil
+		}
+		h.deps.Logger.Errorf("Failed to get VM %s: %v", vmID, err)
+		return errors.New("failed to validate VM")
+	}
+
+	h.deps.Logger.Infof("Successfully validated VM %s, response: %+v", vmID, res)
+	return nil
 }
