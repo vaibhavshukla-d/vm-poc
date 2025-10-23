@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"vm/internal/modals"
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
@@ -15,6 +16,8 @@ type VMRepository interface {
 	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
 	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
+	CreateVMDeployInstances(ctx context.Context, requestID string, baseVMName string, count int) error
+	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error)
 }
 
 // vmRepository implements the VMRepository interface.
@@ -95,4 +98,54 @@ func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID strin
 	})
 
 	return instances, nil
+}
+
+func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, requestID string, baseVMName string, count int) error {
+	r.logger.Info(constants.MySql, constants.Insert, "CreateVMDeployInstances repository function invoked", map[constants.ExtraKey]interface{}{
+		"requestID":  requestID,
+		"baseVMName": baseVMName,
+		"count":      count,
+	})
+
+	db := r.db.GetReader()
+	var instances []modals.VMDeployInstance
+
+	for i := 1; i <= count; i++ {
+		instance := modals.VMDeployInstance{
+			RequestID: requestID,
+			VMName:    fmt.Sprintf("%s_%d", baseVMName, i),
+			VMStatus:  string(constants.VMINIT),
+		}
+		instances = append(instances, instance)
+	}
+
+	result := db.WithContext(ctx).Create(&instances)
+	if result.Error != nil {
+		r.logger.Error(constants.MySql, constants.Insert, "Failed to create VMDeployInstances", map[constants.ExtraKey]interface{}{
+			"error": result.Error.Error(),
+		})
+		return result.Error
+	}
+
+	r.logger.Info(constants.MySql, constants.Insert, "VMDeployInstances created successfully", map[constants.ExtraKey]interface{}{
+		"count": len(instances),
+	})
+
+	return nil
+}
+
+func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error) {
+	var requests []*modals.VMRequest
+	db := r.db.GetReader()
+
+	if err := db.WithContext(ctx).Find(&requests).Error; err != nil {
+		return nil, nil, err
+	}
+
+	var instances []*modals.VMDeployInstance
+	if err := db.WithContext(ctx).Find(&instances).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return requests, instances, nil
 }
