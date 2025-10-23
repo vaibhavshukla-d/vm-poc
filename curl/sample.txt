@@ -51,6 +51,4 @@ curl -X GET http://localhost:8080/virtualization/v1beta1/virtual-machines-reques
 
 
 
-curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines-request/f06a7f48-c5c5-4ba2-81c5-a5c8f036e02a' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer test'
+h

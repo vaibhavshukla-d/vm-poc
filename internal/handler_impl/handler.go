@@ -463,6 +463,7 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 // validateVMExists checks if a VM exists using the vm_monitor client.
 func (h *Handler) validateVMExists(ctx context.Context, vmID string) error {
 	if !h.deps.Config.App.Application.ValidateClientRequest {
+		h.deps.Logger.Infof("validate client request", h.deps.Config.App.Application.ValidateClientRequest)
 		return nil
 	}
 
