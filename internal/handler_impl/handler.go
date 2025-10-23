@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/url"
 	"time"
 
 	imagemanager "vm/internal/client/image_manager"
@@ -471,10 +472,22 @@ func (h *Handler) validateVMExists(ctx context.Context, vmID string) error {
 
 	res, err := vmClient.GetVm(timeoutCtx, vmmonitor.GetVmParams{VMID: vmID})
 	if err != nil {
-		// Treat validation as a best-effort and continue the operation even if the check fails.
 		// This prevents transient issues with the vm_monitor from blocking the request.
-		h.deps.Logger.Warnf("Failed to validate VM %s, but continuing execution as expected: %v", vmID, err)
-		return nil
+		var notFoundErr *vmmonitor.GetVmNotFound
+		var urlErr *url.Error
+
+		if errors.As(err, &notFoundErr) {
+			h.deps.Logger.Errorf("VM %s not found in vm-monitor.", vmID)
+		} else if errors.As(err, &urlErr) {
+			if urlErr.Timeout() {
+				h.deps.Logger.Errorf("Connection to vm-monitor timed out for VM %s: %v", vmID, err)
+			} else {
+				h.deps.Logger.Errorf("Network error while validating VM %s: %v", vmID, err)
+			}
+		} else {
+			h.deps.Logger.Errorf("Failed to validate VM %s: %v", vmID, err)
+		}
+		return errors.New("vm validation failed")
 	}
 
 	h.deps.Logger.Infof("Successfully validated VM %s, response: %+v", vmID, res)
