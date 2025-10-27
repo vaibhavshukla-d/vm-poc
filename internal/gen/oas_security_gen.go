@@ -35,16 +35,17 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 }
 
 var operationRolesBearer = map[string][]string{
-	EditVMOperation:                   []string{},
-	GetVirtualMachineRequestOperation: []string{},
-	HCIDeployVMOperation:              []string{},
-	VMDeleteOperation:                 []string{},
-	VMPowerOffOperation:               []string{},
-	VMPowerOnOperation:                []string{},
-	VMPowerResetOperation:             []string{},
-	VMRefreshOperation:                []string{},
-	VMRestartGuestOSOperation:         []string{},
-	VMShutdownGuestOSOperation:        []string{},
+	EditVMOperation:                       []string{},
+	GetVirtualMachineRequestOperation:     []string{},
+	GetVirtualMachineRequestListOperation: []string{},
+	HCIDeployVMOperation:                  []string{},
+	VMDeleteOperation:                     []string{},
+	VMPowerOffOperation:                   []string{},
+	VMPowerOnOperation:                    []string{},
+	VMPowerResetOperation:                 []string{},
+	VMRefreshOperation:                    []string{},
+	VMRestartGuestOSOperation:             []string{},
+	VMShutdownGuestOSOperation:            []string{},
 }
 
 func (s *Server) securityBearer(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {

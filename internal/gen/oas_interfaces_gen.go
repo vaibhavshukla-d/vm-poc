@@ -5,6 +5,10 @@ type EditVMRes interface {
 	editVMRes()
 }
 
+type GetVirtualMachineRequestListRes interface {
+	getVirtualMachineRequestListRes()
+}
+
 type GetVirtualMachineRequestRes interface {
 	getVirtualMachineRequestRes()
 }

@@ -636,6 +636,22 @@ type GetVirtualMachineRequestInternalServerError ErrorResponse
 
 func (*GetVirtualMachineRequestInternalServerError) getVirtualMachineRequestRes() {}
 
+type GetVirtualMachineRequestListForbidden ErrorResponse
+
+func (*GetVirtualMachineRequestListForbidden) getVirtualMachineRequestListRes() {}
+
+type GetVirtualMachineRequestListInternalServerError ErrorResponse
+
+func (*GetVirtualMachineRequestListInternalServerError) getVirtualMachineRequestListRes() {}
+
+type GetVirtualMachineRequestListNotFound ErrorResponse
+
+func (*GetVirtualMachineRequestListNotFound) getVirtualMachineRequestListRes() {}
+
+type GetVirtualMachineRequestListUnauthorized ErrorResponse
+
+func (*GetVirtualMachineRequestListUnauthorized) getVirtualMachineRequestListRes() {}
+
 type GetVirtualMachineRequestNotFound ErrorResponse
 
 func (*GetVirtualMachineRequestNotFound) getVirtualMachineRequestRes() {}
@@ -2062,6 +2078,52 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
+// NewOptVMRequestsListItems returns new OptVMRequestsListItems with value set to v.
+func NewOptVMRequestsListItems(v VMRequestsListItems) OptVMRequestsListItems {
+	return OptVMRequestsListItems{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptVMRequestsListItems is optional VMRequestsListItems.
+type OptVMRequestsListItems struct {
+	Value VMRequestsListItems
+	Set   bool
+}
+
+// IsSet returns true if OptVMRequestsListItems was set.
+func (o OptVMRequestsListItems) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptVMRequestsListItems) Reset() {
+	var v VMRequestsListItems
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptVMRequestsListItems) SetTo(v VMRequestsListItems) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptVMRequestsListItems) Get() (v VMRequestsListItems, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptVMRequestsListItems) Or(d VMRequestsListItems) VMRequestsListItems {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 type VMDeleteBadRequest ErrorResponse
 
 func (*VMDeleteBadRequest) vMDeleteRes() {}
@@ -2522,6 +2584,73 @@ func (s *VMRequestWithDeploy) SetVMDeployList(val []VMDeployInstance) {
 }
 
 func (*VMRequestWithDeploy) getVirtualMachineRequestRes() {}
+
+// List of all the VM Requests made.
+// Ref: #/components/schemas/VMRequestsList
+type VMRequestsList struct {
+	// Total number of vm request records returned.
+	VMMinusRequestsListCount OptInt `json:"vm-requests_list_count"`
+	// Total number of vm deploy records returned.
+	VMMinusDeployListCount OptInt                 `json:"vm-deploy_list_count"`
+	Items                  OptVMRequestsListItems `json:"items"`
+}
+
+// GetVMMinusRequestsListCount returns the value of VMMinusRequestsListCount.
+func (s *VMRequestsList) GetVMMinusRequestsListCount() OptInt {
+	return s.VMMinusRequestsListCount
+}
+
+// GetVMMinusDeployListCount returns the value of VMMinusDeployListCount.
+func (s *VMRequestsList) GetVMMinusDeployListCount() OptInt {
+	return s.VMMinusDeployListCount
+}
+
+// GetItems returns the value of Items.
+func (s *VMRequestsList) GetItems() OptVMRequestsListItems {
+	return s.Items
+}
+
+// SetVMMinusRequestsListCount sets the value of VMMinusRequestsListCount.
+func (s *VMRequestsList) SetVMMinusRequestsListCount(val OptInt) {
+	s.VMMinusRequestsListCount = val
+}
+
+// SetVMMinusDeployListCount sets the value of VMMinusDeployListCount.
+func (s *VMRequestsList) SetVMMinusDeployListCount(val OptInt) {
+	s.VMMinusDeployListCount = val
+}
+
+// SetItems sets the value of Items.
+func (s *VMRequestsList) SetItems(val OptVMRequestsListItems) {
+	s.Items = val
+}
+
+func (*VMRequestsList) getVirtualMachineRequestListRes() {}
+
+type VMRequestsListItems struct {
+	VMRequetsList []VMRequest        `json:"vm_requets_list"`
+	VMDeployList  []VMDeployInstance `json:"vm_deploy_list"`
+}
+
+// GetVMRequetsList returns the value of VMRequetsList.
+func (s *VMRequestsListItems) GetVMRequetsList() []VMRequest {
+	return s.VMRequetsList
+}
+
+// GetVMDeployList returns the value of VMDeployList.
+func (s *VMRequestsListItems) GetVMDeployList() []VMDeployInstance {
+	return s.VMDeployList
+}
+
+// SetVMRequetsList sets the value of VMRequetsList.
+func (s *VMRequestsListItems) SetVMRequetsList(val []VMRequest) {
+	s.VMRequetsList = val
+}
+
+// SetVMDeployList sets the value of VMDeployList.
+func (s *VMRequestsListItems) SetVMDeployList(val []VMDeployInstance) {
+	s.VMDeployList = val
+}
 
 type VMRestartGuestOSBadRequest ErrorResponse
 

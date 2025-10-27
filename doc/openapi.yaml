@@ -1,4 +1,3 @@
-
 openapi: 3.0.0
 info:
   description: Virtualization API
@@ -30,42 +29,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HCIDeployVM'
+              $ref: "#/components/schemas/HCIDeployVM"
         required: true
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
       summary: Deploy virtual machine
       tags:
@@ -79,59 +78,59 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Delete a virtual machine
       tags:
@@ -145,59 +144,59 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Power off a virtual machine
       tags:
@@ -211,59 +210,59 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Power on a virtual machine
       tags:
@@ -277,50 +276,50 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/EmptyResponse'
+                  - $ref: "#/components/schemas/EmptyResponse"
           description: Request accepted
           headers:
             Location:
               schema:
                 type: string
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthenticated request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: A virtual machine instance with the given ID was not found.
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: >-
             A refresh action cannot be initiated in the current state of the
             cloud account.
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: An unexpected error occurred.
       summary: Refresh the specified virtual machine instance
       tags:
@@ -334,59 +333,59 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Reset a virtual machine
       tags:
@@ -400,59 +399,59 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Restart guest OS of a virtual machine
       tags:
@@ -466,63 +465,63 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Appliance in maintenance mode
       summary: Shutdown guest OS of a virtual machine
       tags:
-        - virtual-machines  
+        - virtual-machines
   /virtualization/v1beta1/virtual-machines/{vm-id}/update-hardware:
     post:
       description: >-
@@ -534,19 +533,19 @@ paths:
           name: vm-id
           required: true
           schema:
-            $ref: '#/components/schemas/VirtualMachine/properties/id'
+            $ref: "#/components/schemas/VirtualMachine/properties/id"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditVM'
+              $ref: "#/components/schemas/EditVM"
         required: true
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyResponse'
+                $ref: "#/components/schemas/EmptyResponse"
           description: Accepted
           headers:
             Location:
@@ -555,47 +554,47 @@ paths:
                 the operation.
               schema:
                 type: string
-        '400':
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Bad request
-        '401':
+        "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Unauthorized request
-        '403':
+        "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Forbidden
-        '404':
+        "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Not found
-        '409':
+        "409":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Conflict
-        '500':
+        "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Internal / unexpected error
-        '503':
+        "503":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
           description: Service unavailable
       summary: Reconfigure virtual machine hardware configurations
       tags:
@@ -612,39 +611,77 @@ paths:
             type: string
             format: uuid
       responses:
-            '200':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/VMRequestWithDeploy'
-              description: Success
-            '401':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/ErrorResponse'
-              description: Unauthorized request
-            '403':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/ErrorResponse'
-              description: Forbidden
-            '404':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/ErrorResponse'
-              description: Resource not found
-            '500':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/ErrorResponse'
-              description: Internal / unexpected error
-      summary: Get a virtual machine identified by {vm-id}
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VMRequestWithDeploy"
+          description: Success
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unauthorized request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Internal / unexpected error
+      summary: Get a virtual machine request identified by {request-id}
       tags:
-            - virtual-machines
+        - virtual-machine-request
+  /virtualization/v1beta1/virtual-machines-request:
+    get:
+      description: Details of a virtual machine request
+      operationId: GetVirtualMachineRequestList
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VMRequestsList"
+          description: Success
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Unauthorized request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Internal / unexpected error
+      summary: Get all virtual machine requests
+      tags:
+        - virtual-machine-requests
 components:
   schemas:
     CommonResourceProperties:
@@ -706,12 +743,12 @@ components:
           description: name of the Protection Job.
           type: string
         protectionPolicyInfo:
-          $ref: '#/components/schemas/DataManagementTemplateInfo'
+          $ref: "#/components/schemas/DataManagementTemplateInfo"
         resourceUri:
           description: Reference to resource.
           type: string
         type:
-          $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+          $ref: "#/components/schemas/CommonResourceProperties/properties/type"
       type: object
     DataManagementTemplateInfo:
       description: |
@@ -731,7 +768,7 @@ components:
           readOnly: true
           type: string
         type:
-          $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+          $ref: "#/components/schemas/CommonResourceProperties/properties/type"
       type: object
     DatacenterInfo:
       description: References to the datacenter that house this virtual machine.
@@ -797,7 +834,7 @@ components:
                 description: >-
                   Specifies if the network adapter has to be connected to
                   virtual machine on power on.
-                example: true  
+                example: true
                 type: boolean
               name:
                 description: >-
@@ -1219,7 +1256,7 @@ components:
             vmware:
               properties:
                 datacenterInfo:
-                  $ref: '#/components/schemas/DatacenterInfo'
+                  $ref: "#/components/schemas/DatacenterInfo"
                 datastoresInfo:
                   description: >-
                     References to all datastores that house virtual disks of
@@ -1245,7 +1282,7 @@ components:
                         description: The URI reference for this resource.
                         type: string
                       type:
-                        $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+                        $ref: "#/components/schemas/CommonResourceProperties/properties/type"
                     type: object
                   type: array
                 moref:
@@ -1314,7 +1351,7 @@ components:
                       description: >-
                         Version of the VMware tool installed in this virtual
                         machine.
-                      example: '9349'
+                      example: "9349"
                       type: string
                   type: object
                 type:
@@ -1368,14 +1405,14 @@ components:
               description: The URI reference for this resource.
               type: string
             type:
-              $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+              $ref: "#/components/schemas/CommonResourceProperties/properties/type"
           type: object
         computeInfo:
           description: Compute information of the virtual machine.
           properties:
             memorySizeInMib:
               description: Total memory provisioned.
-              example: '4096'
+              example: "4096"
               type: string
             numCpuCores:
               description: Number of CPU cores provisioned.
@@ -1424,10 +1461,10 @@ components:
               description: The URI reference for this resource.
               type: string
             type:
-              $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+              $ref: "#/components/schemas/CommonResourceProperties/properties/type"
           type: object
         generation:
-          $ref: '#/components/schemas/CommonResourceProperties/properties/generation'
+          $ref: "#/components/schemas/CommonResourceProperties/properties/generation"
         guestInfo:
           description: Information of this guest OS running on the virtual machine.
           properties:
@@ -1483,7 +1520,7 @@ components:
               description: The URI reference for this resource.
               type: string
             type:
-              $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+              $ref: "#/components/schemas/CommonResourceProperties/properties/type"
           type: object
         hypervisorManagerInfo:
           properties:
@@ -1505,7 +1542,7 @@ components:
               description: The URI reference for this resource.
               type: string
             type:
-              $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+              $ref: "#/components/schemas/CommonResourceProperties/properties/type"
           type: object
         id:
           description: UUID string uniquely identifying the virtual machine
@@ -1565,7 +1602,7 @@ components:
                       - DELETED
                     type: string
                   type:
-                    $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+                    $ref: "#/components/schemas/CommonResourceProperties/properties/type"
                 type: object
             type: object
           type: array
@@ -1581,19 +1618,19 @@ components:
             - UNKNOWN
           type: string
         protectionJobInfo:
-          $ref: '#/components/schemas/DataManagementJobInfo'
+          $ref: "#/components/schemas/DataManagementJobInfo"
         protectionPolicyAppliedAtInfo:
-          $ref: '#/components/schemas/ProtectionPolicyAppliedAtInfo'
+          $ref: "#/components/schemas/ProtectionPolicyAppliedAtInfo"
         protectionStatus:
-          $ref: '#/components/schemas/protectionStatus'
+          $ref: "#/components/schemas/protectionStatus"
         recoveryPointsExist:
-          $ref: '#/components/schemas/recoveryPointsExist'
+          $ref: "#/components/schemas/recoveryPointsExist"
         resourceUri:
           description: The 'self' reference for this resource.
           example: /virtualization/v1beta1/virtual-machines/{vm-id}
           type: string
         services:
-          $ref: '#/components/schemas/Services'
+          $ref: "#/components/schemas/Services"
         state:
           description: The current state of the virtual machine
           enum:
@@ -1621,7 +1658,7 @@ components:
             - WARNING
           type: string
         type:
-          $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+          $ref: "#/components/schemas/CommonResourceProperties/properties/type"
         uid:
           description: >-
             Unique identifier of the virtual machine as reported by the
@@ -1672,7 +1709,7 @@ components:
                             description: The URI reference for this resource.
                             type: string
                           type:
-                            $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+                            $ref: "#/components/schemas/CommonResourceProperties/properties/type"
                         type: object
                       diskUuidEnabled:
                         description: >-
@@ -1781,12 +1818,12 @@ components:
         vmProtectionGroupsInfo:
           description: Protection groups related to the virtual machine.
           items:
-            $ref: '#/components/schemas/VmProtectionGroupInfo'
+            $ref: "#/components/schemas/VmProtectionGroupInfo"
           type: array
         volumesInfo:
           description: Volumes associated with this virtual machine.
           items:
-            $ref: '#/components/schemas/VolumeInfo'
+            $ref: "#/components/schemas/VolumeInfo"
           type: array
       required:
         - id
@@ -1865,13 +1902,37 @@ components:
       type: object
       properties:
         vm_request:
-          $ref: '#/components/schemas/VMRequest'
+          $ref: "#/components/schemas/VMRequest"
         vm_deploy_list:
           type: array
           items:
-            $ref: '#/components/schemas/VMDeployInstance'
+            $ref: "#/components/schemas/VMDeployInstance"
       required:
         - vm_request
+        - vm_deploy_list
+    VMRequestsList:
+      type: object
+      description: List of all the VM Requests made
+      properties:
+        vm-requests_list_count:
+          description: Total number of vm request records returned.
+          type: integer
+        vm-deploy_list_count:
+          description: Total number of vm deploy records returned.
+          type: integer
+        items:
+          type: object
+          properties:
+            vm_requets_list:
+              type: array
+              items:
+                $ref: "#/components/schemas/VMRequest"
+            vm_deploy_list:
+              type: array
+              items:
+                $ref: "#/components/schemas/VMDeployInstance"
+      required:
+        - vm_requests_list
         - vm_deploy_list
     VmProtectionGroupInfo:
       description: Information of the Virtual Machine Protection Group.
@@ -1888,7 +1949,7 @@ components:
           description: Reference to resource.
           type: string
         type:
-          $ref: '#/components/schemas/CommonResourceProperties/properties/type'
+          $ref: "#/components/schemas/CommonResourceProperties/properties/type"
       type: object
     VolumeInfo:
       description: Information of volume or snapshot.
@@ -1917,16 +1978,16 @@ components:
           format: int64
           type: integer
         storageFolderInfo:
-          $ref: '#/components/schemas/StorageFolderInfo'
+          $ref: "#/components/schemas/StorageFolderInfo"
         storagePoolInfo:
-          $ref: '#/components/schemas/StoragePoolInfo'
+          $ref: "#/components/schemas/StoragePoolInfo"
         storageSystemInfo:
-          $ref: '#/components/schemas/StorageSystemInfo'
+          $ref: "#/components/schemas/StorageSystemInfo"
         type:
           description: Type of volume.
           type: string
         volumeSetInfo:
-          $ref: '#/components/schemas/VolumeSetInfo'
+          $ref: "#/components/schemas/VolumeSetInfo"
       type: object
     VolumeSetInfo:
       description: Describes a volume set.
@@ -1978,7 +2039,7 @@ components:
       description: >
         The Data Service Cloud Console API uses a JWT bearer token for
         authentication.
- 
+
         An authentication token can be obtained from the HPE GreenLake console.
       scheme: bearer
       type: http

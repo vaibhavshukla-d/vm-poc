@@ -21,6 +21,12 @@ type Handler interface {
 	//
 	// GET /virtualization/v1beta1/virtual-machines-request/{request-id}
 	GetVirtualMachineRequest(ctx context.Context, params GetVirtualMachineRequestParams) (GetVirtualMachineRequestRes, error)
+	// GetVirtualMachineRequestList implements GetVirtualMachineRequestList operation.
+	//
+	// Details of a virtual machine request.
+	//
+	// GET /virtualization/v1beta1/virtual-machines-request
+	GetVirtualMachineRequestList(ctx context.Context) (GetVirtualMachineRequestListRes, error)
 	// HCIDeployVM implements HCIDeployVM operation.
 	//
 	// Deploys one or more virtual machines in HCI environment with specified template and storage

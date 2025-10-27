@@ -6,14 +6,15 @@ package api
 type OperationName = string
 
 const (
-	EditVMOperation                   OperationName = "EditVM"
-	GetVirtualMachineRequestOperation OperationName = "GetVirtualMachineRequest"
-	HCIDeployVMOperation              OperationName = "HCIDeployVM"
-	VMDeleteOperation                 OperationName = "VMDelete"
-	VMPowerOffOperation               OperationName = "VMPowerOff"
-	VMPowerOnOperation                OperationName = "VMPowerOn"
-	VMPowerResetOperation             OperationName = "VMPowerReset"
-	VMRefreshOperation                OperationName = "VMRefresh"
-	VMRestartGuestOSOperation         OperationName = "VMRestartGuestOS"
-	VMShutdownGuestOSOperation        OperationName = "VMShutdownGuestOS"
+	EditVMOperation                       OperationName = "EditVM"
+	GetVirtualMachineRequestOperation     OperationName = "GetVirtualMachineRequest"
+	GetVirtualMachineRequestListOperation OperationName = "GetVirtualMachineRequestList"
+	HCIDeployVMOperation                  OperationName = "HCIDeployVM"
+	VMDeleteOperation                     OperationName = "VMDelete"
+	VMPowerOffOperation                   OperationName = "VMPowerOff"
+	VMPowerOnOperation                    OperationName = "VMPowerOn"
+	VMPowerResetOperation                 OperationName = "VMPowerReset"
+	VMRefreshOperation                    OperationName = "VMRefresh"
+	VMRestartGuestOSOperation             OperationName = "VMRestartGuestOS"
+	VMShutdownGuestOSOperation            OperationName = "VMShutdownGuestOS"
 )
