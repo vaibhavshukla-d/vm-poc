@@ -2505,32 +2505,32 @@ func (s *VMRequestOperation) UnmarshalText(data []byte) error {
 type VMRequestRequestStatus string
 
 const (
-	VMRequestRequestStatusNEW        VMRequestRequestStatus = "NEW"
-	VMRequestRequestStatusINPROGRESS VMRequestRequestStatus = "INPROGRESS"
-	VMRequestRequestStatusSUCCESS    VMRequestRequestStatus = "SUCCESS"
-	VMRequestRequestStatusFAILURE    VMRequestRequestStatus = "FAILURE"
+	VMRequestRequestStatusNew        VMRequestRequestStatus = "New"
+	VMRequestRequestStatusInprogress VMRequestRequestStatus = "Inprogress"
+	VMRequestRequestStatusSuccess    VMRequestRequestStatus = "Success"
+	VMRequestRequestStatusFailure    VMRequestRequestStatus = "Failure"
 )
 
 // AllValues returns all VMRequestRequestStatus values.
 func (VMRequestRequestStatus) AllValues() []VMRequestRequestStatus {
 	return []VMRequestRequestStatus{
-		VMRequestRequestStatusNEW,
-		VMRequestRequestStatusINPROGRESS,
-		VMRequestRequestStatusSUCCESS,
-		VMRequestRequestStatusFAILURE,
+		VMRequestRequestStatusNew,
+		VMRequestRequestStatusInprogress,
+		VMRequestRequestStatusSuccess,
+		VMRequestRequestStatusFailure,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (s VMRequestRequestStatus) MarshalText() ([]byte, error) {
 	switch s {
-	case VMRequestRequestStatusNEW:
+	case VMRequestRequestStatusNew:
 		return []byte(s), nil
-	case VMRequestRequestStatusINPROGRESS:
+	case VMRequestRequestStatusInprogress:
 		return []byte(s), nil
-	case VMRequestRequestStatusSUCCESS:
+	case VMRequestRequestStatusSuccess:
 		return []byte(s), nil
-	case VMRequestRequestStatusFAILURE:
+	case VMRequestRequestStatusFailure:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -2540,17 +2540,17 @@ func (s VMRequestRequestStatus) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *VMRequestRequestStatus) UnmarshalText(data []byte) error {
 	switch VMRequestRequestStatus(data) {
-	case VMRequestRequestStatusNEW:
-		*s = VMRequestRequestStatusNEW
+	case VMRequestRequestStatusNew:
+		*s = VMRequestRequestStatusNew
 		return nil
-	case VMRequestRequestStatusINPROGRESS:
-		*s = VMRequestRequestStatusINPROGRESS
+	case VMRequestRequestStatusInprogress:
+		*s = VMRequestRequestStatusInprogress
 		return nil
-	case VMRequestRequestStatusSUCCESS:
-		*s = VMRequestRequestStatusSUCCESS
+	case VMRequestRequestStatusSuccess:
+		*s = VMRequestRequestStatusSuccess
 		return nil
-	case VMRequestRequestStatusFAILURE:
-		*s = VMRequestRequestStatusFAILURE
+	case VMRequestRequestStatusFailure:
+		*s = VMRequestRequestStatusFailure
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

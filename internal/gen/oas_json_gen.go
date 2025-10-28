@@ -5244,14 +5244,14 @@ func (s *VMRequestRequestStatus) Decode(d *jx.Decoder) error {
 	}
 	// Try to use constant string.
 	switch VMRequestRequestStatus(v) {
-	case VMRequestRequestStatusNEW:
-		*s = VMRequestRequestStatusNEW
-	case VMRequestRequestStatusINPROGRESS:
-		*s = VMRequestRequestStatusINPROGRESS
-	case VMRequestRequestStatusSUCCESS:
-		*s = VMRequestRequestStatusSUCCESS
-	case VMRequestRequestStatusFAILURE:
-		*s = VMRequestRequestStatusFAILURE
+	case VMRequestRequestStatusNew:
+		*s = VMRequestRequestStatusNew
+	case VMRequestRequestStatusInprogress:
+		*s = VMRequestRequestStatusInprogress
+	case VMRequestRequestStatusSuccess:
+		*s = VMRequestRequestStatusSuccess
+	case VMRequestRequestStatusFailure:
+		*s = VMRequestRequestStatusFailure
 	default:
 		*s = VMRequestRequestStatus(v)
 	}

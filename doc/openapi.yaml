@@ -1852,10 +1852,10 @@ components:
         requestStatus:
           type: string
           enum:
-            - NEW
-            - INPROGRESS
-            - SUCCESS
-            - FAILURE
+            - New
+            - Inprogress
+            - Success
+            - Failure
         workspaceId:
           type: string
         datacenterId:

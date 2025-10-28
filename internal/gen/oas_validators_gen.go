@@ -619,13 +619,13 @@ func (s VMRequestOperation) Validate() error {
 
 func (s VMRequestRequestStatus) Validate() error {
 	switch s {
-	case "NEW":
+	case "New":
 		return nil
-	case "INPROGRESS":
+	case "Inprogress":
 		return nil
-	case "SUCCESS":
+	case "Success":
 		return nil
-	case "FAILURE":
+	case "Failure":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
