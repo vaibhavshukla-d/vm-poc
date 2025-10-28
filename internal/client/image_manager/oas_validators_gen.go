@@ -7,66 +7,20 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-func (s *Image) Validate() error {
+func (s *HypervisorImage) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := (validate.String{
-			MinLength:    1,
-			MinLengthSet: true,
-			MaxLength:    0,
-			MaxLengthSet: false,
-			Email:        false,
-			Hostname:     false,
-			Regex:        nil,
-		}).Validate(string(s.ID)); err != nil {
-			return errors.Wrap(err, "string")
+		if err := (validate.Float{}).Validate(float64(s.SizeGB)); err != nil {
+			return errors.Wrap(err, "float")
 		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
-			Name:  "id",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := (validate.String{
-			MinLength:    1,
-			MinLengthSet: true,
-			MaxLength:    0,
-			MaxLengthSet: false,
-			Email:        false,
-			Hostname:     false,
-			Regex:        nil,
-		}).Validate(string(s.Name)); err != nil {
-			return errors.Wrap(err, "string")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "name",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if err := (validate.String{
-			MinLength:    1,
-			MinLengthSet: true,
-			MaxLength:    0,
-			MaxLengthSet: false,
-			Email:        false,
-			Hostname:     false,
-			Regex:        nil,
-		}).Validate(string(s.Type)); err != nil {
-			return errors.Wrap(err, "string")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
+			Name:  "size_gb",
 			Error: err,
 		})
 	}

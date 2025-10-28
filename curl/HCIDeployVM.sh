@@ -1,14 +1,98 @@
-curl -X POST \
-  'https://us-west.api.greenlake.hpe.com/virtualization/v1beta1/virtual-machines' \
-  --header 'Accept: application/json' \
-  --header 'Authorization: Bearer YOUR_TOKEN' \
-  --header 'Content-Type: application/json' \
-  --data-raw '{
-    "vmConfig": {
-        "name": "string",
-        "acceptEula": true
-    },
-    "storageConfig": {
-        "defaultDatastoreId": "string"
+curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines' \
+
+--header 'Content-Type: application/json' \
+
+--header 'Authorization: bearer test' \
+
+--data '{
+
+  "destination": {
+
+    "clusterId": "cluster-uuid-123",
+
+    "folderId": "folder-uuid-456",
+
+    "hostId": "host-uuid-789",
+
+    "resourcePoolId": "rp-uuid-101"
+
+  },
+
+  "imageSource": {
+
+    "imageId": "image-uuid-212",
+
+    "imageName": "ubuntu-22.04-template",
+
+    "imageSourceType": "HYPERVISOR_IMAGE_LIBRARY"
+
+  },
+
+  "networkConfig": {
+
+    "ipAllocationPolicy": "DHCP_POLICY",
+
+    "networkMapping": [
+
+      {
+
+        "name": "VM Network",
+
+        "network": "network-uuid-313"
+
+      }
+
+    ]
+
+  },
+
+  "storageConfig": {
+
+    "defaultDatastoreId": "datastore-uuid-414",
+
+    "provisioningType": "THIN"
+
+  },
+
+  "vmConfig": {
+
+    "acceptEula": true,
+
+    "annotation": "This is a sample VM deployed via API.",
+
+    "locale": "en-US",
+
+    "name": "my-full-config-vm",
+
+    "numberOfVms": 1,
+
+    "powerOn": true,
+
+    "propertyConfig": [
+
+      {
+
+        "key": "guestinfo.hostname",
+
+        "value": "my-vm"
+
+      }
+
+    ]
+
+  },
+
+  "vmPolicy": [
+
+    {
+
+      "id": "policy-uuid-515",
+
+      "type": "VM_PROVISIONING_POLICY"
+
     }
+
+  ]
+
 }'
+ 
