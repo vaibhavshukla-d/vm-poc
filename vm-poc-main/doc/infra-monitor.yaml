@@ -1,0 +1,137 @@
+openapi: 3.0.0
+info:
+  title: Virtualization API
+  description: Virtualization API to retrieve hypervisor host and cluster details.
+  version: 1.2.0
+  license:
+    name: HPE End User License Agreement
+    url: https://www.hpe.com/us/en/software/licensing.html
+servers:
+  - url: https://ind-north.api.greenlake.hpe.com
+  - url: https://ind-south.api.greenlake.hpe.com
+security:
+  - bearer: []
+tags:
+  - name: hypervisor-hosts
+    description: Retrieve metrics and metadata for hypervisor hosts
+  - name: hypervisor-clusters
+    description: Retrieve metadata for hypervisor clusters
+
+paths:
+  /virtualization/v1beta1/hypervisor-hosts:
+    get:
+      tags:
+        - hypervisor-hosts
+      summary: Retrieve list of hypervisor hosts
+      description: Returns a list of hypervisor hosts with their metrics and metadata.
+      operationId: getHypervisorHosts
+      responses:
+        '200':
+          description: A list of hypervisor hosts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HypervisorHost'
+
+  /virtualization/v1beta1/hypervisor-clusters:
+    get:
+      tags:
+        - hypervisor-clusters
+      summary: Retrieve list of hypervisor clusters
+      description: Returns a list of hypervisor clusters with metadata and host count.
+      operationId: getHypervisorClusters
+      responses:
+        '200':
+          description: A list of hypervisor clusters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HypervisorCluster'
+
+components:
+  schemas:
+    HypervisorHost:
+      type: object
+      additionalProperties: false
+      properties:
+        hostMetricsInfo:
+          type: object
+          properties:
+            cpuUsage:
+              type: number
+              format: float
+              example: 67.0
+            memUsage:
+              type: number
+              format: float
+              example: 1404.0
+        hostName:
+          type: string
+          example: DC0_H0
+        hostType:
+          type: string
+          example: ESXi
+        hypervisorClusterInfo:
+          type: string
+          example: N/A
+        hypervisorManagerInfo:
+          type: string
+          example: vCenter
+        networkAddress:
+          type: string
+          nullable: true
+          example: null
+        networkInfo:
+          type: string
+          example: N/A
+        status:
+          type: string
+          example: OK
+      required:
+        - hostMetricsInfo
+        - hostName
+        - hostType
+        - hypervisorClusterInfo
+        - hypervisorManagerInfo
+        - networkInfo
+        - status
+
+    HypervisorCluster:
+      type: object
+      additionalProperties: false
+      properties:
+        clusterName:
+          type: string
+          example: DC0_C0
+        clusterType:
+          type: string
+          example: ESXi
+        hypervisorHosts:
+          type: integer
+          example: 3
+        hypervisorManagerInfo:
+          type: string
+          example: vCenter
+        status:
+          type: string
+          example: OK
+      required:
+        - clusterName
+        - clusterType
+        - hypervisorHosts
+        - hypervisorManagerInfo
+        - status
+
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        The Data Service Cloud Console API uses a JWT bearer token for authentication.
+
+        An authentication token can be obtained from the HPE GreenLake console.

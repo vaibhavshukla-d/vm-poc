@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: Virtualization API
+  description: Virtualization API to retrieve available hypervisor images.
+  version: 1.2.0
+  license:
+    name: HPE End User License Agreement
+    url: https://www.hpe.com/us/en/software/licensing.html
+servers:
+  - url: https://global.api.greenlake.hpe.com
+security:
+  - bearer: []
+tags:
+  - name: image-manager
+    description: The image manager API retrieves available hypervisor images.
+
+paths:
+  /api/images:
+    get:
+      tags:
+        - image-manager
+      summary: Retrieve list of available hypervisor images
+      description: Returns metadata for available hypervisor images.
+      operationId: getAvailableImages
+      responses:
+        '200':
+          description: A list of available hypervisor images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HypervisorImage'
+
+components:
+  schemas:
+    HypervisorImage:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the image.
+          example: img001
+        filename:
+          type: string
+          description: Name of the image file.
+          example: ubuntu-22.04.ova
+        distribution:
+          type: string
+          description: OS distribution and version.
+          example: Ubuntu 22.04 LTS
+        description:
+          type: string
+          description: Description of the image.
+          example: Ubuntu 22.04 LTS base image
+        checksum_sha256:
+          type: string
+          description: SHA-256 checksum of the image file.
+          example: 9acca8e8c22201155389f65abbf6bc9723edc7384ead80503839f49dcc56d767
+        size_gb:
+          type: number
+          format: float
+          description: Size of the image in gigabytes.
+          example: 0.5
+        image_url:
+          type: string
+          format: uri
+          description: Direct URL to download or access the image.
+          example: http://global.api.greenlake.hpe.com/api/images/ubuntu-22.04.ova
+      required:
+        - id
+        - filename
+        - distribution
+        - description
+        - checksum_sha256
+        - size_gb
+        - image_url
+
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        The Data Service Cloud Console API uses a JWT bearer token for authentication.
+
+        An authentication token can be obtained from the HPE GreenLake console.
