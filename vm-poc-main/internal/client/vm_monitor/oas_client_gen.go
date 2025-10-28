@@ -21,12 +21,12 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// GetVm invokes GetVm operation.
+	// GetVmMetrics invokes getVmMetrics operation.
 	//
-	// Current status of a virtual machine.
+	// Returns performance and status metrics for the specified virtual machine.
 	//
-	// GET /virtualization/v1beta1/vm-monitor/{vm-id}
-	GetVm(ctx context.Context, params GetVmParams) (GetVmRes, error)
+	// GET /virtualization/v1beta1/virtual-machines/vm_metrics/{vm-id}
+	GetVmMetrics(ctx context.Context, params GetVmMetricsParams) (*VmMetrics, error)
 }
 
 // Client implements OAS client.
@@ -70,21 +70,21 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// GetVm invokes GetVm operation.
+// GetVmMetrics invokes getVmMetrics operation.
 //
-// Current status of a virtual machine.
+// Returns performance and status metrics for the specified virtual machine.
 //
-// GET /virtualization/v1beta1/vm-monitor/{vm-id}
-func (c *Client) GetVm(ctx context.Context, params GetVmParams) (GetVmRes, error) {
-	res, err := c.sendGetVm(ctx, params)
+// GET /virtualization/v1beta1/virtual-machines/vm_metrics/{vm-id}
+func (c *Client) GetVmMetrics(ctx context.Context, params GetVmMetricsParams) (*VmMetrics, error) {
+	res, err := c.sendGetVmMetrics(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetVm(ctx context.Context, params GetVmParams) (res GetVmRes, err error) {
+func (c *Client) sendGetVmMetrics(ctx context.Context, params GetVmMetricsParams) (res *VmMetrics, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [2]string
-	pathParts[0] = "/virtualization/v1beta1/vm-monitor/"
+	pathParts[0] = "/virtualization/v1beta1/virtual-machines/vm_metrics/"
 	{
 		// Encode "vm-id" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
@@ -115,7 +115,7 @@ func (c *Client) sendGetVm(ctx context.Context, params GetVmParams) (res GetVmRe
 		var satisfied bitset
 		{
 
-			switch err := c.securityBearer(ctx, GetVmOperation, r); {
+			switch err := c.securityBearer(ctx, GetVmMetricsOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -149,7 +149,7 @@ func (c *Client) sendGetVm(ctx context.Context, params GetVmParams) (res GetVmRe
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeGetVmResponse(resp)
+	result, err := decodeGetVmMetricsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
