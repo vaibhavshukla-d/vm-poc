@@ -1,8 +1,0 @@
-# sets generator options.
-generator:
-  # sets generator features.
-  features:
-    enable:
-      # Enables paths server generation
-      - "paths/server"
-    disable_all: true

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-faster/errors"
-	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/uri"
@@ -21,24 +20,18 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// Datastore invokes Datastore operation.
+	// GetHypervisorClusters invokes getHypervisorClusters operation.
 	//
-	// Details of a datastore.
+	// Returns a list of hypervisor clusters with metadata and host count.
 	//
-	// GET /virtualization/v1beta1/infra-monitor/datastores/{datastore-id}
-	Datastore(ctx context.Context, params DatastoreParams) (DatastoreRes, error)
-	// HypervisorCluster invokes HypervisorCluster operation.
+	// GET /virtualization/v1beta1/hypervisor-clusters
+	GetHypervisorClusters(ctx context.Context) ([]HypervisorCluster, error)
+	// GetHypervisorHosts invokes getHypervisorHosts operation.
 	//
-	// Details of a hypervisors cluster.
+	// Returns a list of hypervisor hosts with their metrics and metadata.
 	//
-	// GET /virtualization/v1beta1/infra-monitor/clusters/{cluster-id}
-	HypervisorCluster(ctx context.Context, params HypervisorClusterParams) (HypervisorClusterRes, error)
-	// HypervisorHost invokes HypervisorHost operation.
-	//
-	// Details of a hypervisors host.
-	//
-	// GET /virtualization/v1beta1/infra-monitor/hosts/{host-id}
-	HypervisorHost(ctx context.Context, params HypervisorHostParams) (HypervisorHostRes, error)
+	// GET /virtualization/v1beta1/hypervisor-hosts
+	GetHypervisorHosts(ctx context.Context) ([]HypervisorHost, error)
 }
 
 // Client implements OAS client.
@@ -82,39 +75,21 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// Datastore invokes Datastore operation.
+// GetHypervisorClusters invokes getHypervisorClusters operation.
 //
-// Details of a datastore.
+// Returns a list of hypervisor clusters with metadata and host count.
 //
-// GET /virtualization/v1beta1/infra-monitor/datastores/{datastore-id}
-func (c *Client) Datastore(ctx context.Context, params DatastoreParams) (DatastoreRes, error) {
-	res, err := c.sendDatastore(ctx, params)
+// GET /virtualization/v1beta1/hypervisor-clusters
+func (c *Client) GetHypervisorClusters(ctx context.Context) ([]HypervisorCluster, error) {
+	res, err := c.sendGetHypervisorClusters(ctx)
 	return res, err
 }
 
-func (c *Client) sendDatastore(ctx context.Context, params DatastoreParams) (res DatastoreRes, err error) {
+func (c *Client) sendGetHypervisorClusters(ctx context.Context) (res []HypervisorCluster, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/virtualization/v1beta1/infra-monitor/datastores/"
-	{
-		// Encode "datastore-id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "datastore-id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.DatastoreID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/virtualization/v1beta1/hypervisor-clusters"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -127,7 +102,7 @@ func (c *Client) sendDatastore(ctx context.Context, params DatastoreParams) (res
 		var satisfied bitset
 		{
 
-			switch err := c.securityBearer(ctx, DatastoreOperation, r); {
+			switch err := c.securityBearer(ctx, GetHypervisorClustersOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -161,7 +136,7 @@ func (c *Client) sendDatastore(ctx context.Context, params DatastoreParams) (res
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeDatastoreResponse(resp)
+	result, err := decodeGetHypervisorClustersResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -169,39 +144,21 @@ func (c *Client) sendDatastore(ctx context.Context, params DatastoreParams) (res
 	return result, nil
 }
 
-// HypervisorCluster invokes HypervisorCluster operation.
+// GetHypervisorHosts invokes getHypervisorHosts operation.
 //
-// Details of a hypervisors cluster.
+// Returns a list of hypervisor hosts with their metrics and metadata.
 //
-// GET /virtualization/v1beta1/infra-monitor/clusters/{cluster-id}
-func (c *Client) HypervisorCluster(ctx context.Context, params HypervisorClusterParams) (HypervisorClusterRes, error) {
-	res, err := c.sendHypervisorCluster(ctx, params)
+// GET /virtualization/v1beta1/hypervisor-hosts
+func (c *Client) GetHypervisorHosts(ctx context.Context) ([]HypervisorHost, error) {
+	res, err := c.sendGetHypervisorHosts(ctx)
 	return res, err
 }
 
-func (c *Client) sendHypervisorCluster(ctx context.Context, params HypervisorClusterParams) (res HypervisorClusterRes, err error) {
+func (c *Client) sendGetHypervisorHosts(ctx context.Context) (res []HypervisorHost, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/virtualization/v1beta1/infra-monitor/clusters/"
-	{
-		// Encode "cluster-id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "cluster-id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.ClusterID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/virtualization/v1beta1/hypervisor-hosts"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -214,7 +171,7 @@ func (c *Client) sendHypervisorCluster(ctx context.Context, params HypervisorClu
 		var satisfied bitset
 		{
 
-			switch err := c.securityBearer(ctx, HypervisorClusterOperation, r); {
+			switch err := c.securityBearer(ctx, GetHypervisorHostsOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -248,94 +205,7 @@ func (c *Client) sendHypervisorCluster(ctx context.Context, params HypervisorClu
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeHypervisorClusterResponse(resp)
-	if err != nil {
-		return res, errors.Wrap(err, "decode response")
-	}
-
-	return result, nil
-}
-
-// HypervisorHost invokes HypervisorHost operation.
-//
-// Details of a hypervisors host.
-//
-// GET /virtualization/v1beta1/infra-monitor/hosts/{host-id}
-func (c *Client) HypervisorHost(ctx context.Context, params HypervisorHostParams) (HypervisorHostRes, error) {
-	res, err := c.sendHypervisorHost(ctx, params)
-	return res, err
-}
-
-func (c *Client) sendHypervisorHost(ctx context.Context, params HypervisorHostParams) (res HypervisorHostRes, err error) {
-
-	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/virtualization/v1beta1/infra-monitor/hosts/"
-	{
-		// Encode "host-id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "host-id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.HostID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
-	uri.AddPathParts(u, pathParts[:]...)
-
-	r, err := ht.NewRequest(ctx, "GET", u)
-	if err != nil {
-		return res, errors.Wrap(err, "create request")
-	}
-
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-
-			switch err := c.securityBearer(ctx, HypervisorHostOperation, r); {
-			case err == nil: // if NO error
-				satisfied[0] |= 1 << 0
-			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
-				// Skip this security.
-			default:
-				return res, errors.Wrap(err, "security \"Bearer\"")
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
-		}
-	}
-
-	resp, err := c.cfg.Client.Do(r)
-	if err != nil {
-		return res, errors.Wrap(err, "do request")
-	}
-	defer resp.Body.Close()
-
-	result, err := decodeHypervisorHostResponse(resp)
+	result, err := decodeGetHypervisorHostsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

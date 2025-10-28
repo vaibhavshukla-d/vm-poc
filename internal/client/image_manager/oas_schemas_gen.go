@@ -2,6 +2,10 @@
 
 package client
 
+import (
+	"net/url"
+)
+
 type Bearer struct {
 	Token string
 	Roles []string
@@ -27,112 +31,90 @@ func (s *Bearer) SetRoles(val []string) {
 	s.Roles = val
 }
 
-// Ref: #/components/schemas/ErrorResponse
-type ErrorResponse struct {
-	// A unique identifier for the request.
-	DebugId string `json:"debugId"`
-	// A machine friendly identifier for the error response.
-	ErrorCode string `json:"errorCode"`
-	// The HTTP status code of the response.
-	HttpStatusCode int `json:"httpStatusCode"`
-	// A user-friendly error message.
-	Message string `json:"message"`
-}
-
-// GetDebugId returns the value of DebugId.
-func (s *ErrorResponse) GetDebugId() string {
-	return s.DebugId
-}
-
-// GetErrorCode returns the value of ErrorCode.
-func (s *ErrorResponse) GetErrorCode() string {
-	return s.ErrorCode
-}
-
-// GetHttpStatusCode returns the value of HttpStatusCode.
-func (s *ErrorResponse) GetHttpStatusCode() int {
-	return s.HttpStatusCode
-}
-
-// GetMessage returns the value of Message.
-func (s *ErrorResponse) GetMessage() string {
-	return s.Message
-}
-
-// SetDebugId sets the value of DebugId.
-func (s *ErrorResponse) SetDebugId(val string) {
-	s.DebugId = val
-}
-
-// SetErrorCode sets the value of ErrorCode.
-func (s *ErrorResponse) SetErrorCode(val string) {
-	s.ErrorCode = val
-}
-
-// SetHttpStatusCode sets the value of HttpStatusCode.
-func (s *ErrorResponse) SetHttpStatusCode(val int) {
-	s.HttpStatusCode = val
-}
-
-// SetMessage sets the value of Message.
-func (s *ErrorResponse) SetMessage(val string) {
-	s.Message = val
-}
-
-type GetImageForbidden ErrorResponse
-
-func (*GetImageForbidden) getImageRes() {}
-
-type GetImageInternalServerError ErrorResponse
-
-func (*GetImageInternalServerError) getImageRes() {}
-
-type GetImageNotFound ErrorResponse
-
-func (*GetImageNotFound) getImageRes() {}
-
-type GetImageUnauthorized ErrorResponse
-
-func (*GetImageUnauthorized) getImageRes() {}
-
-// Ref: #/components/schemas/Image
-type Image struct {
+// Ref: #/components/schemas/HypervisorImage
+type HypervisorImage struct {
 	// Unique identifier for the image.
 	ID string `json:"id"`
-	// Name of the image file or resource.
-	Name string `json:"name"`
-	// Image type or format (e.g., png, jpeg).
-	Type string `json:"type"`
+	// Name of the image file.
+	Filename string `json:"filename"`
+	// OS distribution and version.
+	Distribution string `json:"distribution"`
+	// Description of the image.
+	Description string `json:"description"`
+	// SHA-256 checksum of the image file.
+	ChecksumSHA256 string `json:"checksum_sha256"`
+	// Size of the image in gigabytes.
+	SizeGB float32 `json:"size_gb"`
+	// Direct URL to download or access the image.
+	ImageURL url.URL `json:"image_url"`
 }
 
 // GetID returns the value of ID.
-func (s *Image) GetID() string {
+func (s *HypervisorImage) GetID() string {
 	return s.ID
 }
 
-// GetName returns the value of Name.
-func (s *Image) GetName() string {
-	return s.Name
+// GetFilename returns the value of Filename.
+func (s *HypervisorImage) GetFilename() string {
+	return s.Filename
 }
 
-// GetType returns the value of Type.
-func (s *Image) GetType() string {
-	return s.Type
+// GetDistribution returns the value of Distribution.
+func (s *HypervisorImage) GetDistribution() string {
+	return s.Distribution
+}
+
+// GetDescription returns the value of Description.
+func (s *HypervisorImage) GetDescription() string {
+	return s.Description
+}
+
+// GetChecksumSHA256 returns the value of ChecksumSHA256.
+func (s *HypervisorImage) GetChecksumSHA256() string {
+	return s.ChecksumSHA256
+}
+
+// GetSizeGB returns the value of SizeGB.
+func (s *HypervisorImage) GetSizeGB() float32 {
+	return s.SizeGB
+}
+
+// GetImageURL returns the value of ImageURL.
+func (s *HypervisorImage) GetImageURL() url.URL {
+	return s.ImageURL
 }
 
 // SetID sets the value of ID.
-func (s *Image) SetID(val string) {
+func (s *HypervisorImage) SetID(val string) {
 	s.ID = val
 }
 
-// SetName sets the value of Name.
-func (s *Image) SetName(val string) {
-	s.Name = val
+// SetFilename sets the value of Filename.
+func (s *HypervisorImage) SetFilename(val string) {
+	s.Filename = val
 }
 
-// SetType sets the value of Type.
-func (s *Image) SetType(val string) {
-	s.Type = val
+// SetDistribution sets the value of Distribution.
+func (s *HypervisorImage) SetDistribution(val string) {
+	s.Distribution = val
 }
 
-func (*Image) getImageRes() {}
+// SetDescription sets the value of Description.
+func (s *HypervisorImage) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetChecksumSHA256 sets the value of ChecksumSHA256.
+func (s *HypervisorImage) SetChecksumSHA256(val string) {
+	s.ChecksumSHA256 = val
+}
+
+// SetSizeGB sets the value of SizeGB.
+func (s *HypervisorImage) SetSizeGB(val float32) {
+	s.SizeGB = val
+}
+
+// SetImageURL sets the value of ImageURL.
+func (s *HypervisorImage) SetImageURL(val url.URL) {
+	s.ImageURL = val
+}

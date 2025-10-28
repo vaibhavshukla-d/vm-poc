@@ -6,5 +6,5 @@ package client
 type OperationName = string
 
 const (
-	GetImageOperation OperationName = "GetImage"
+	GetAvailableImagesOperation OperationName = "GetAvailableImages"
 )

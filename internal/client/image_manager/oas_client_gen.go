@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/go-faster/errors"
-	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/uri"
@@ -21,12 +20,12 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// GetImage invokes GetImage operation.
+	// GetAvailableImages invokes getAvailableImages operation.
 	//
-	// Details of an image.
+	// Returns metadata for available hypervisor images.
 	//
-	// GET /virtualization/v1beta1/image-manager/{image-id}
-	GetImage(ctx context.Context, params GetImageParams) (GetImageRes, error)
+	// GET /api/images
+	GetAvailableImages(ctx context.Context) ([]HypervisorImage, error)
 }
 
 // Client implements OAS client.
@@ -70,39 +69,21 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// GetImage invokes GetImage operation.
+// GetAvailableImages invokes getAvailableImages operation.
 //
-// Details of an image.
+// Returns metadata for available hypervisor images.
 //
-// GET /virtualization/v1beta1/image-manager/{image-id}
-func (c *Client) GetImage(ctx context.Context, params GetImageParams) (GetImageRes, error) {
-	res, err := c.sendGetImage(ctx, params)
+// GET /api/images
+func (c *Client) GetAvailableImages(ctx context.Context) ([]HypervisorImage, error) {
+	res, err := c.sendGetAvailableImages(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetImage(ctx context.Context, params GetImageParams) (res GetImageRes, err error) {
+func (c *Client) sendGetAvailableImages(ctx context.Context) (res []HypervisorImage, err error) {
 
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/virtualization/v1beta1/image-manager/"
-	{
-		// Encode "image-id" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "image-id",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.StringToString(params.ImageID))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/api/images"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -115,7 +96,7 @@ func (c *Client) sendGetImage(ctx context.Context, params GetImageParams) (res G
 		var satisfied bitset
 		{
 
-			switch err := c.securityBearer(ctx, GetImageOperation, r); {
+			switch err := c.securityBearer(ctx, GetAvailableImagesOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -149,7 +130,7 @@ func (c *Client) sendGetImage(ctx context.Context, params GetImageParams) (res G
 	}
 	defer resp.Body.Close()
 
-	result, err := decodeGetImageResponse(resp)
+	result, err := decodeGetAvailableImagesResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

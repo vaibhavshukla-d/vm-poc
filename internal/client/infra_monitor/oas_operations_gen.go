@@ -6,7 +6,6 @@ package client
 type OperationName = string
 
 const (
-	DatastoreOperation         OperationName = "Datastore"
-	HypervisorClusterOperation OperationName = "HypervisorCluster"
-	HypervisorHostOperation    OperationName = "HypervisorHost"
+	GetHypervisorClustersOperation OperationName = "GetHypervisorClusters"
+	GetHypervisorHostsOperation    OperationName = "GetHypervisorHosts"
 )
