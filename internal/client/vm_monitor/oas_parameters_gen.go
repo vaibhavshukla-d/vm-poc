@@ -2,7 +2,8 @@
 
 package client
 
-// GetVmParams is parameters of GetVm operation.
-type GetVmParams struct {
+// GetVmMetricsParams is parameters of getVmMetrics operation.
+type GetVmMetricsParams struct {
+	// Unique identifier of the virtual machine.
 	VMID string
 }

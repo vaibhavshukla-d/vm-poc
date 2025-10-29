@@ -137,11 +137,7 @@ func (s *Server) handleEditVMRequest(args [1]string, argsEscaped bool, w http.Re
 			Params   = EditVMParams
 			Response = EditVMRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackEditVMParams,
@@ -265,11 +261,7 @@ func (s *Server) handleGetVirtualMachineRequestRequest(args [1]string, argsEscap
 			Params   = GetVirtualMachineRequestParams
 			Response = GetVirtualMachineRequestRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackGetVirtualMachineRequestParams,
@@ -378,11 +370,7 @@ func (s *Server) handleGetVirtualMachineRequestListRequest(args [0]string, argsE
 			Params   = struct{}
 			Response = GetVirtualMachineRequestListRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			nil,
@@ -507,11 +495,7 @@ func (s *Server) handleHCIDeployVMRequest(args [0]string, argsEscaped bool, w ht
 			Params   = struct{}
 			Response = HCIDeployVMRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			nil,
@@ -635,11 +619,7 @@ func (s *Server) handleVMDeleteRequest(args [1]string, argsEscaped bool, w http.
 			Params   = VMDeleteParams
 			Response = VMDeleteRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMDeleteParams,
@@ -763,11 +743,7 @@ func (s *Server) handleVMPowerOffRequest(args [1]string, argsEscaped bool, w htt
 			Params   = VMPowerOffParams
 			Response = VMPowerOffRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMPowerOffParams,
@@ -891,11 +867,7 @@ func (s *Server) handleVMPowerOnRequest(args [1]string, argsEscaped bool, w http
 			Params   = VMPowerOnParams
 			Response = VMPowerOnRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMPowerOnParams,
@@ -1019,11 +991,7 @@ func (s *Server) handleVMPowerResetRequest(args [1]string, argsEscaped bool, w h
 			Params   = VMPowerResetParams
 			Response = VMPowerResetRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMPowerResetParams,
@@ -1147,11 +1115,7 @@ func (s *Server) handleVMRefreshRequest(args [1]string, argsEscaped bool, w http
 			Params   = VMRefreshParams
 			Response = VMRefreshRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMRefreshParams,
@@ -1275,11 +1239,7 @@ func (s *Server) handleVMRestartGuestOSRequest(args [1]string, argsEscaped bool,
 			Params   = VMRestartGuestOSParams
 			Response = VMRestartGuestOSRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMRestartGuestOSParams,
@@ -1403,11 +1363,7 @@ func (s *Server) handleVMShutdownGuestOSRequest(args [1]string, argsEscaped bool
 			Params   = VMShutdownGuestOSParams
 			Response = VMShutdownGuestOSRes
 		)
-		response, err = middleware.HookMiddleware[
-			Request,
-			Params,
-			Response,
-		](
+		response, err = middleware.HookMiddleware(
 			m,
 			mreq,
 			unpackVMShutdownGuestOSParams,

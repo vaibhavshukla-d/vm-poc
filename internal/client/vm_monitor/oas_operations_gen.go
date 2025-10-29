@@ -6,5 +6,5 @@ package client
 type OperationName = string
 
 const (
-	GetVmOperation OperationName = "GetVm"
+	GetVmMetricsOperation OperationName = "GetVmMetrics"
 )
