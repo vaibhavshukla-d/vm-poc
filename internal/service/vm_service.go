@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	api "vm/internal/gen"
 	"vm/internal/modals"
 	"vm/internal/repo"
@@ -12,6 +13,8 @@ import (
 )
 
 // VMService defines the interface for VM-related business logic.
+//
+//go:generate mockgen -source=vm_service.go -destination=../../tests/unit/internal/service/mock/vm_serviceMock.go
 type VMService interface {
 	CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, error)
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
@@ -51,20 +54,6 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 	// 	return nil, errUtlis
 	// }
 
-	var numVMs int
-	var vmName string
-	if operation == constants.VMDeploy {
-		var deployReq api.HCIDeployVM
-		if err := json.Unmarshal([]byte(metadata), &deployReq); err != nil {
-			s.logger.Error(constants.Internal, constants.Api, "Failed to unmarshal deploy metadata", map[constants.ExtraKey]interface{}{
-				"error": err.Error(),
-			})
-			return nil, err
-		}
-		numVMs = deployReq.VmConfig.NumberOfVms.Value
-		vmName = deployReq.VmConfig.Name
-	}
-
 	vmRequest := &modals.VMRequest{
 		Operation:       string(operation),
 		RequestStatus:   string(status),
@@ -79,13 +68,35 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 		return nil, err
 	}
 
-	if operation == constants.VMDeploy && numVMs > 0 {
-		err := s.vmRepo.CreateVMDeployInstances(ctx, vmRequest.RequestID, vmName, numVMs)
-		if err != nil {
-			s.logger.Error(constants.Internal, constants.Api, "Failed to create VM deploy instances", map[constants.ExtraKey]interface{}{
+	switch operation {
+	case constants.VMDeploy:
+		var deployReq api.HCIDeployVM
+		if err := json.Unmarshal([]byte(metadata), &deployReq); err != nil {
+			s.logger.Error(constants.Internal, constants.Api, "Failed to unmarshal deploy metadata", map[constants.ExtraKey]interface{}{
 				"error": err.Error(),
 			})
 			return nil, err
+		}
+
+		numVMs := deployReq.VmConfig.NumberOfVms.Value
+		vmName := deployReq.VmConfig.Name
+
+		if numVMs > 0 {
+			var instances []modals.VMDeployInstance
+			for i := 1; i <= numVMs; i++ {
+				instances = append(instances, modals.VMDeployInstance{
+					RequestID: vmRequest.RequestID,
+					VMName:    fmt.Sprintf("%s_%d", vmName, i),
+					VMStatus:  string(constants.VMINIT),
+				})
+			}
+
+			if err := s.vmRepo.CreateVMDeployInstances(ctx, instances); err != nil {
+				s.logger.Error(constants.Internal, constants.Api, "Failed to create VM deploy instances", map[constants.ExtraKey]interface{}{
+					"error": err.Error(),
+				})
+				return nil, err
+			}
 		}
 	}
 

@@ -2,22 +2,18 @@ package repo
 
 import (
 	"context"
-	"fmt"
 	"vm/internal/modals"
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
 	"vm/pkg/db"
-
-	"gorm.io/gorm"
 )
 
-//go:generate mockery --name=VMRepository --output=./mocks --outpkg=mocks
-// VMRepository defines the interface for VM database operations.
+//go:generate mockgen -source=vm_repository.go -destination=../../tests/unit/internal/repo/mock/vm_repositoryMock.go
 type VMRepository interface {
 	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
 	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
-	CreateVMDeployInstances(ctx context.Context, requestID string, baseVMName string, count int) error
+	CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) error
 	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error)
 }
 
@@ -68,9 +64,6 @@ func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*mod
 		})
 		return nil, result.Error
 	}
-	if result.RowsAffected == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
 
 	r.logger.Info(constants.MySql, constants.Select, "VMRequest retrieved successfully", map[constants.ExtraKey]interface{}{
 		"requestID": req.RequestID,
@@ -101,25 +94,13 @@ func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID strin
 	return instances, nil
 }
 
-func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, requestID string, baseVMName string, count int) error {
+func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) error {
 	r.logger.Info(constants.MySql, constants.Insert, "CreateVMDeployInstances repository function invoked", map[constants.ExtraKey]interface{}{
-		"requestID":  requestID,
-		"baseVMName": baseVMName,
-		"count":      count,
+		"requestID": instances[0].RequestID,
+		"count":     len(instances),
 	})
 
 	db := r.db.GetReader()
-	var instances []modals.VMDeployInstance
-
-	for i := 1; i <= count; i++ {
-		instance := modals.VMDeployInstance{
-			RequestID: requestID,
-			VMName:    fmt.Sprintf("%s_%d", baseVMName, i),
-			VMStatus:  string(constants.VMINIT),
-		}
-		instances = append(instances, instance)
-	}
-
 	result := db.WithContext(ctx).Create(&instances)
 	if result.Error != nil {
 		r.logger.Error(constants.MySql, constants.Insert, "Failed to create VMDeployInstances", map[constants.ExtraKey]interface{}{
