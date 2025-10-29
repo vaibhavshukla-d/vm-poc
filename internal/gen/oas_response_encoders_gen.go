@@ -9,9 +9,11 @@ import (
 	"github.com/go-faster/jx"
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/uri"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
-func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
+func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -35,6 +37,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -47,6 +50,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -59,6 +63,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -71,6 +76,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -83,6 +89,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -95,6 +102,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -107,6 +115,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -119,6 +128,7 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	case *EditVMServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -133,11 +143,12 @@ func encodeEditVMResponse(response EditVMRes, w http.ResponseWriter) error {
 	}
 }
 
-func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes, w http.ResponseWriter) error {
+func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *VMRequestWithDeploy:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -150,6 +161,7 @@ func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes
 	case *GetVirtualMachineRequestUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -162,6 +174,7 @@ func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes
 	case *GetVirtualMachineRequestForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -174,6 +187,7 @@ func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes
 	case *GetVirtualMachineRequestNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -186,6 +200,7 @@ func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes
 	case *GetVirtualMachineRequestInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -200,11 +215,12 @@ func encodeGetVirtualMachineRequestResponse(response GetVirtualMachineRequestRes
 	}
 }
 
-func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineRequestListRes, w http.ResponseWriter) error {
+func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineRequestListRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *VMRequestsList:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -217,6 +233,7 @@ func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineReques
 	case *GetVirtualMachineRequestListUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -229,6 +246,7 @@ func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineReques
 	case *GetVirtualMachineRequestListForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -241,6 +259,7 @@ func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineReques
 	case *GetVirtualMachineRequestListNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -253,6 +272,7 @@ func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineReques
 	case *GetVirtualMachineRequestListInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -267,7 +287,7 @@ func encodeGetVirtualMachineRequestListResponse(response GetVirtualMachineReques
 	}
 }
 
-func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) error {
+func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -291,6 +311,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -303,6 +324,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 	case *HCIDeployVMBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -315,6 +337,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 	case *HCIDeployVMUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -327,6 +350,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 	case *HCIDeployVMForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -339,6 +363,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 	case *HCIDeployVMInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -353,7 +378,7 @@ func encodeHCIDeployVMResponse(response HCIDeployVMRes, w http.ResponseWriter) e
 	}
 }
 
-func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
+func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -377,6 +402,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -389,6 +415,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -401,6 +428,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -413,6 +441,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -425,6 +454,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -437,6 +467,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -449,6 +480,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -461,6 +493,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	case *VMDeleteServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -475,7 +508,7 @@ func encodeVMDeleteResponse(response VMDeleteRes, w http.ResponseWriter) error {
 	}
 }
 
-func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) error {
+func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -499,6 +532,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -511,6 +545,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -523,6 +558,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -535,6 +571,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -547,6 +584,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -559,6 +597,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -571,6 +610,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -583,6 +623,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	case *VMPowerOffServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -597,7 +638,7 @@ func encodeVMPowerOffResponse(response VMPowerOffRes, w http.ResponseWriter) err
 	}
 }
 
-func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error {
+func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -621,6 +662,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -633,6 +675,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -645,6 +688,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -657,6 +701,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -669,6 +714,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -681,6 +727,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -693,6 +740,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -705,6 +753,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	case *VMPowerOnServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -719,7 +768,7 @@ func encodeVMPowerOnResponse(response VMPowerOnRes, w http.ResponseWriter) error
 	}
 }
 
-func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter) error {
+func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -743,6 +792,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -755,6 +805,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -767,6 +818,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -779,6 +831,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -791,6 +844,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -803,6 +857,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -815,6 +870,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -827,6 +883,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	case *VMPowerResetServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -841,7 +898,7 @@ func encodeVMPowerResetResponse(response VMPowerResetRes, w http.ResponseWriter)
 	}
 }
 
-func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error {
+func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -865,6 +922,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -877,6 +935,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	case *VMRefreshUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -889,6 +948,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	case *VMRefreshForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -901,6 +961,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	case *VMRefreshNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -913,6 +974,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	case *VMRefreshConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -925,6 +987,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	case *VMRefreshInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -939,7 +1002,7 @@ func encodeVMRefreshResponse(response VMRefreshRes, w http.ResponseWriter) error
 	}
 }
 
-func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.ResponseWriter) error {
+func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -963,6 +1026,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -975,6 +1039,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -987,6 +1052,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -999,6 +1065,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1011,6 +1078,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1023,6 +1091,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1035,6 +1104,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1047,6 +1117,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	case *VMRestartGuestOSServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1061,7 +1132,7 @@ func encodeVMRestartGuestOSResponse(response VMRestartGuestOSRes, w http.Respons
 	}
 }
 
-func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.ResponseWriter) error {
+func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *EmptyResponseHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -1085,6 +1156,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 			}
 		}
 		w.WriteHeader(202)
+		span.SetStatus(codes.Ok, http.StatusText(202))
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -1097,6 +1169,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSBadRequest:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1109,6 +1182,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSUnauthorized:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1121,6 +1195,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSForbidden:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(403)
+		span.SetStatus(codes.Error, http.StatusText(403))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1133,6 +1208,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSNotFound:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1145,6 +1221,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSConflict:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1157,6 +1234,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSInternalServerError:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -1169,6 +1247,7 @@ func encodeVMShutdownGuestOSResponse(response VMShutdownGuestOSRes, w http.Respo
 	case *VMShutdownGuestOSServiceUnavailable:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(503)
+		span.SetStatus(codes.Error, http.StatusText(503))
 
 		e := new(jx.Encoder)
 		response.Encode(e)

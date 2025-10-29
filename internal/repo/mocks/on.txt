@@ -1,0 +1,300 @@
+## Introduction
+
+`testify/mock` is a mocking framework for Go that allows you to create mock objects for testing. It's part of the popular `stretchr/testify` testing toolkit and provides a clean, intuitive API for setting up expectations and verifying behavior in your tests.
+
+## What is testify/mock?
+
+The `testify/mock` package provides functionality to:
+- Create mock implementations of interfaces
+- Define expected method calls
+- Specify return values for those calls
+- Verify that expected calls were made
+- Assert argument values passed to methods
+
+**Installation:**
+```bash
+go get github.com/stretchr/testify/mock
+```
+
+---
+
+## Core Concepts
+
+### 1. Mock Object
+A mock object is a simulated version of a real object that mimics its behavior in a controlled way for testing purposes.
+
+### 2. Expectations
+Expectations define what method calls you expect to happen during a test, along with:
+- Which arguments should be passed
+- What values should be returned
+- How many times the method should be called
+
+### 3. Assertions
+After running your test, you verify that all expectations were met using `AssertExpectations()`.
+
+---
+
+## The `.On()` Method Explained
+
+### What Does `.On()` Do?
+
+The `.On()` method is used to **set up an expectation** for a method call on a mock object. It tells the mock: "When this method is called with these arguments, here's what should happen."
+
+### Syntax
+
+```go
+mockObject.On("MethodName", arg1, arg2, ...).Return(returnValue1, returnValue2, ...)
+```
+
+### Breaking Down `.On()`
+
+```go
+mock.On("MethodName", arguments...).Return(values...)
+     │         │            │              │
+     │         │            │              └─ What to return when called
+     │         │            └─ Expected arguments (can use matchers)
+     │         └─ Name of the method being mocked (as string)
+     └─ The mock object
+```
+
+### Key Components
+
+1. **Method Name (string)**: The exact name of the method you're mocking
+2. **Arguments**: The expected arguments (or argument matchers)
+3. **Return Values**: What the mock should return when called
+4. **Additional Options**: Chain methods like `.Times()`, `.Once()`, `.Maybe()`
+
+---
+
+## Practical Examples
+
+### Example 1: Basic Mock Setup
+
+Let's say we have an interface:
+
+```go
+type UserRepository interface {
+    GetUser(id int) (*User, error)
+}
+```
+
+Creating a mock:
+
+```go
+type MockUserRepository struct {
+    mock.Mock
+}
+
+func (m *MockUserRepository) GetUser(id int) (*User, error) {
+    args := m.Called(id)
+    return args.Get(0).(*User), args.Error(1)
+}
+```
+
+Using `.On()` in a test:
+
+```go
+func TestGetUserProfile(t *testing.T) {
+    // Create mock
+    mockRepo := new(MockUserRepository)
+    
+    // Set up expectation using .On()
+    expectedUser := &User{ID: 1, Name: "John"}
+    mockRepo.On("GetUser", 1).Return(expectedUser, nil)
+    
+    // Use the mock in your test
+    service := NewUserService(mockRepo)
+    user, err := service.GetUserProfile(1)
+    
+    // Assertions
+    assert.NoError(t, err)
+    assert.Equal(t, "John", user.Name)
+    
+    // Verify expectations were met
+    mockRepo.AssertExpectations(t)
+}
+```
+
+### Example 2: Using Argument Matchers
+
+Instead of exact values, you can use matchers:
+
+```go
+import "github.com/stretchr/testify/mock"
+
+// Match any integer
+mockRepo.On("GetUser", mock.AnythingOfType("int")).Return(user, nil)
+
+// Match any value
+mockRepo.On("GetUser", mock.Anything).Return(user, nil)
+
+// Match with custom function
+mockRepo.On("GetUser", mock.MatchedBy(func(id int) bool {
+    return id > 0
+})).Return(user, nil)
+```
+
+### Example 3: Multiple Return Values
+
+```go
+// Method returns multiple values
+mockRepo.On("SaveUser", mock.Anything).Return(true, nil)
+
+// Different returns based on arguments
+mockRepo.On("GetUser", 1).Return(&User{ID: 1, Name: "John"}, nil)
+mockRepo.On("GetUser", 2).Return(nil, errors.New("user not found"))
+```
+
+### Example 4: Controlling Call Counts
+
+```go
+// Expect exactly one call
+mockRepo.On("GetUser", 1).Return(user, nil).Once()
+
+// Expect exactly N calls
+mockRepo.On("GetUser", 1).Return(user, nil).Times(3)
+
+// Call may or may not happen (no assertion failure if not called)
+mockRepo.On("GetUser", 1).Return(user, nil).Maybe()
+
+// No return value needed
+mockRepo.On("DeleteUser", 1).Return()
+```
+
+---
+
+## Common Patterns
+
+### Pattern 1: Setup and Teardown
+
+```go
+func TestUserService(t *testing.T) {
+    // Setup
+    mockRepo := new(MockUserRepository)
+    mockRepo.On("GetUser", 1).Return(&User{ID: 1}, nil)
+    
+    service := NewUserService(mockRepo)
+    
+    // Exercise
+    result, err := service.GetUserProfile(1)
+    
+    // Verify
+    assert.NoError(t, err)
+    mockRepo.AssertExpectations(t)
+}
+```
+
+### Pattern 2: Table-Driven Tests with Mocks
+
+```go
+func TestGetUser(t *testing.T) {
+    tests := []struct {
+        name        string
+        userID      int
+        mockReturn  *User
+        mockError   error
+        expectError bool
+    }{
+        {"valid user", 1, &User{ID: 1}, nil, false},
+        {"user not found", 999, nil, errors.New("not found"), true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mockRepo := new(MockUserRepository)
+            mockRepo.On("GetUser", tt.userID).Return(tt.mockReturn, tt.mockError)
+            
+            service := NewUserService(mockRepo)
+            user, err := service.GetUserProfile(tt.userID)
+            
+            if tt.expectError {
+                assert.Error(t, err)
+            } else {
+                assert.NoError(t, err)
+                assert.Equal(t, tt.mockReturn, user)
+            }
+            
+            mockRepo.AssertExpectations(t)
+        })
+    }
+}
+```
+
+### Pattern 3: Verifying Specific Calls
+
+```go
+// Assert a specific method was called
+mockRepo.AssertCalled(t, "GetUser", 1)
+
+// Assert a method was NOT called
+mockRepo.AssertNotCalled(t, "DeleteUser", mock.Anything)
+
+// Assert number of calls
+mockRepo.AssertNumberOfCalls(t, "GetUser", 3)
+```
+
+---
+
+## Best Practices
+
+### 1. **Be Specific with Expectations**
+```go
+// Good: Specific argument
+mockRepo.On("GetUser", 1).Return(user, nil)
+
+// Less ideal: Too permissive
+mockRepo.On("GetUser", mock.Anything).Return(user, nil)
+```
+
+### 2. **Always Call `AssertExpectations()`**
+```go
+defer mockRepo.AssertExpectations(t)
+```
+
+### 3. **Keep Mocks Simple**
+Don't overcomplicate mock setup. If you need many expectations, consider refactoring your test or code.
+
+### 4. **Use `.Once()` When Appropriate**
+```go
+// Ensures method is called exactly once
+mockRepo.On("GetUser", 1).Return(user, nil).Once()
+```
+
+### 5. **Name Your Mocks Clearly**
+```go
+// Good
+mockUserRepo := new(MockUserRepository)
+
+// Less clear
+mock1 := new(MockUserRepository)
+```
+
+### 6. **Mock Interfaces, Not Concrete Types**
+Design your code to depend on interfaces, making them easy to mock.
+
+---
+
+## Quick Reference
+
+| Method | Purpose |
+|--------|---------|
+| `.On(method, args...)` | Set up expectation for a method call |
+| `.Return(values...)` | Specify return values |
+| `.Once()` | Expect exactly one call |
+| `.Times(n)` | Expect exactly n calls |
+| `.Maybe()` | Optional call (won't fail if not called) |
+| `.AssertExpectations(t)` | Verify all expectations were met |
+| `.AssertCalled(t, method, args...)` | Assert specific call was made |
+| `.AssertNotCalled(t, method, args...)` | Assert call was NOT made |
+
+---
+
+## Summary
+
+The `.On()` method is the foundation of setting up mock expectations in testify/mock. It allows you to:
+1. Specify which method you expect to be called
+2. Define what arguments it should receive
+3. Determine what it should return
+4. Control how many times it should be called
+
+By mastering `.On()` and the mock package, you can write clear, maintainable tests that verify your code's behavior without depending on external systems or complex setup.

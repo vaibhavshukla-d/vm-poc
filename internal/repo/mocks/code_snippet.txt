@@ -1,0 +1,50 @@
+-------------------------------
+------------service------------ 
+-------------------------------
+user, _ := repo.FindByID(ctx, 1)
+repo.Update(ctx, user)
+repo.LogActivity(ctx, user.ID)
+
+
+
+-------------------------------
+-----------Test Case----------- 
+-------------------------------
+mockRepo.On("FindByID", mock.Anything, 1).
+    Return(&User{ID: 1, Name: "HPE"}, nil)
+
+mockRepo.On("Update", mock.Anything, mock.MatchedBy(func(u *User) bool {
+    return u.Name == "HPE"
+})).Return(nil)
+
+mockRepo.On("LogActivity", mock.Anything, 1).Return(nil)
+
+
+
+-------------------------------
+------------Example------------ 
+-------------------------------
+func TestUpdateUserName_MultipleFindByID(t *testing.T) {
+	mockRepo := new(mocks.UserRepository)
+
+	// First call
+	mockRepo.On("FindByID", mock.Anything, 1).
+		Once().
+		Return(&models.User{ID: 1, Name: "Old"}, nil)
+
+	// Second call (simulate changed data)
+	mockRepo.On("FindByID", mock.Anything, 1).
+		Once().
+		Return(&models.User{ID: 1, Name: "Updated"}, nil)
+
+	mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*models.User")).
+		Return(nil)
+
+	mockRepo.On("LogActivity", mock.Anything, 1).
+		Return(nil)
+
+	svc := service.NewUserService(mockRepo)
+	_ = svc.UpdateUserName(context.Background(), 1, "Updated")
+
+	mockRepo.AssertExpectations(t)
+}

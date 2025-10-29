@@ -5,4 +5,5 @@ generator:
     enable:
       # Enables paths server generation
       - "paths/server"
+      - "ogen/otel"
     disable_all: true
