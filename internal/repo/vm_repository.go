@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockery --name=VMRepository --output=./mocks --outpkg=mocks
 // VMRepository defines the interface for VM database operations.
 type VMRepository interface {
 	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error

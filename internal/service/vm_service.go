@@ -51,11 +51,25 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 	// 	return nil, errUtlis
 	// }
 
+	var numVMs int
+	var vmName string
+	if operation == constants.VMDeploy {
+		var deployReq api.HCIDeployVM
+		if err := json.Unmarshal([]byte(metadata), &deployReq); err != nil {
+			s.logger.Error(constants.Internal, constants.Api, "Failed to unmarshal deploy metadata", map[constants.ExtraKey]interface{}{
+				"error": err.Error(),
+			})
+			return nil, err
+		}
+		numVMs = deployReq.VmConfig.NumberOfVms.Value
+		vmName = deployReq.VmConfig.Name
+	}
+
 	vmRequest := &modals.VMRequest{
 		Operation:       string(operation),
 		RequestStatus:   string(status),
 		RequestMetadata: metadata,
-		// WorkspaceId:     workspaceID,	
+		// WorkspaceId:     workspaceID,
 	}
 	err := s.vmRepo.CreateVMRequest(ctx, vmRequest)
 	if err != nil {
@@ -65,26 +79,13 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 		return nil, err
 	}
 
-	if operation == constants.VMDeploy {
-		var deployReq api.HCIDeployVM
-		if err := json.Unmarshal([]byte(metadata), &deployReq); err != nil {
-			s.logger.Error(constants.Internal, constants.Api, "Failed to unmarshal deploy metadata", map[constants.ExtraKey]interface{}{
+	if operation == constants.VMDeploy && numVMs > 0 {
+		err := s.vmRepo.CreateVMDeployInstances(ctx, vmRequest.RequestID, vmName, numVMs)
+		if err != nil {
+			s.logger.Error(constants.Internal, constants.Api, "Failed to create VM deploy instances", map[constants.ExtraKey]interface{}{
 				"error": err.Error(),
 			})
 			return nil, err
-		}
-
-		numVMs := deployReq.VmConfig.NumberOfVms.Value
-		vmName := deployReq.VmConfig.Name
-
-		if numVMs > 0 {
-			err := s.vmRepo.CreateVMDeployInstances(ctx, vmRequest.RequestID, vmName, numVMs)
-			if err != nil {
-				s.logger.Error(constants.Internal, constants.Api, "Failed to create VM deploy instances", map[constants.ExtraKey]interface{}{
-					"error": err.Error(),
-				})
-				return nil, err
-			}
 		}
 	}
 

@@ -62,6 +62,50 @@ func (m *MockLogger) Fatalf(templateName string, args ...interface{}) {
 	m.Called(templateName, args)
 }
 
+func TestGetAllVMRequestsWithInstances(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
+		mockRepo := new(mocks.VMRepository)
+		mockLogger := new(MockLogger)
+		vmService := NewVMService(mockRepo, mockLogger)
+
+		expectedVMs := []*modals.VMRequest{{RequestID: "req1"}}
+		expectedInstances := []*modals.VMDeployInstance{{RequestID: "req1", VMName: "vm1"}}
+
+		mockLogger.On("Info", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		mockRepo.On("GetAllVMRequestsWithInstances", mock.Anything).Return(expectedVMs, expectedInstances, nil)
+
+		vms, instances, reqCount, instCount, err := vmService.GetAllVMRequestsWithInstances(context.Background())
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedVMs, vms)
+		assert.Equal(t, len(expectedVMs), reqCount)
+		assert.Equal(t, len(expectedInstances), instCount)
+		assert.Equal(t, expectedInstances, instances)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("DB Error", func(t *testing.T) {
+		mockRepo := new(mocks.VMRepository)
+		mockLogger := new(MockLogger)
+		vmService := NewVMService(mockRepo, mockLogger)
+
+		dbError := errors.New("database error")
+		mockLogger.On("Info", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		mockLogger.On("Error", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		mockRepo.On("GetAllVMRequestsWithInstances", mock.Anything).Return(nil, nil, dbError)
+
+		vms, instances, reqCount, instCount, err := vmService.GetAllVMRequestsWithInstances(context.Background())
+
+		assert.Error(t, err)
+		assert.Nil(t, vms)
+		assert.Equal(t, 0, reqCount)
+		assert.Equal(t, 0, instCount)
+		assert.Nil(t, instances)
+		assert.Equal(t, dbError, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
 func TestCreateVMRequest_Hybrid(t *testing.T) {
 	metadata := `{
         "imageSource": {"imageId": "some-image-id"},
