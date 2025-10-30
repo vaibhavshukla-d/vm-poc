@@ -44,14 +44,14 @@ func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVM
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal EditVm Request: %v", err)
 		return &api.EditVMInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal EditVm Request",
 		}, nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMReconfigure, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to marshal EditVm Request: %v", vmRequesterr)
 		return &api.EditVMInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -89,7 +89,7 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 		h.deps.Logger.Errorf("Failed to marshal HCIDeployVM Request: %v", metadataerr)
 		// Handle marshaling error
 		return &api.HCIDeployVMInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal HCIDeployVM Request",
 		}, nil
 	}
 
@@ -98,7 +98,7 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM Deploy request: %v", vmRequesterr)
 		return &api.HCIDeployVMInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -126,14 +126,14 @@ func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMDelete Request: %v", err)
 		return &api.VMDeleteInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMDelete Request",
 		}, nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMDelete, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
-		h.deps.Logger.Errorf("Failed to marshal VMDelete Request: %v", vmRequesterr)
+		h.deps.Logger.Errorf("Failed to create VMDelete Request: %v", vmRequesterr)
 		return &api.VMDeleteInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -158,14 +158,14 @@ func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerOff Request: %v", err)
 		return &api.VMPowerOffInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMPowerOff Request",
 		}, nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMPowerOff, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
-		h.deps.Logger.Errorf("Failed to marshal VMPowerOff Request: %v", vmRequesterr)
+		h.deps.Logger.Errorf("Failed to create VMPowerOff Request: %v", vmRequesterr)
 		return &api.VMPowerOffInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -191,7 +191,7 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerOn params: %v", err)
 		return &api.VMPowerOnInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMPowerOn params",
 		}, nil
 	}
 
@@ -199,7 +199,7 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power on request: %v", vmRequesterr)
 		return &api.VMPowerOnInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -225,7 +225,7 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerReset params: %v", err)
 		return &api.VMPowerResetInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMPowerReset params",
 		}, nil
 	}
 
@@ -233,7 +233,7 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power reset request: %v", vmRequesterr)
 		return &api.VMPowerResetInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -259,7 +259,7 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMRefresh params: %v", err)
 		return &api.VMRefreshInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMRefresh params",
 		}, nil
 	}
 
@@ -267,7 +267,7 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM refresh request: %v", vmRequesterr)
 		return &api.VMRefreshInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -293,7 +293,7 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMRestartGuestOS params: %v", err)
 		return &api.VMRestartGuestOSInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMRestartGuestOS params",
 		}, nil
 	}
 
@@ -301,7 +301,7 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM restart guest OS request: %v", vmRequesterr)
 		return &api.VMRestartGuestOSInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 
@@ -327,7 +327,7 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMShutdownGuestOS params: %v", err)
 		return &api.VMShutdownGuestOSInternalServerError{
-			Message: "Failed to process request",
+			Message: "Failed to marshal VMShutdownGuestOS params",
 		}, nil
 	}
 
@@ -335,7 +335,7 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM shutdown guest OS request: %v", vmRequesterr)
 		return &api.VMShutdownGuestOSInternalServerError{
-			Message: "Failed to create VM request",
+			Message: vmRequesterr.Error(),
 		}, nil
 	}
 

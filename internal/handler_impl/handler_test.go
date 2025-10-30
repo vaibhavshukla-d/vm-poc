@@ -72,7 +72,7 @@ func TestEditVM_ValidateVMExists(t *testing.T) {
 		res, err := handler.EditVM(context.Background(), req, params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.EditVMInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.EditVMInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.EditVMInternalServerError).Message)
 	})
 
 }
@@ -181,7 +181,7 @@ func TestHandler_HCIDeployVM(t *testing.T) {
 		res, err := handler.HCIDeployVM(context.Background(), req)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.HCIDeployVMInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.HCIDeployVMInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.HCIDeployVMInternalServerError).Message)
 	})
 }
 
@@ -234,7 +234,7 @@ func TestHandler_VMDelete(t *testing.T) {
 		res, err := handler.VMDelete(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMDeleteInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMDeleteInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMDeleteInternalServerError).Message)
 	})
 }
 
@@ -287,7 +287,7 @@ func TestHandler_VMPowerOff(t *testing.T) {
 		res, err := handler.VMPowerOff(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMPowerOffInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMPowerOffInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMPowerOffInternalServerError).Message)
 	})
 }
 
@@ -340,7 +340,7 @@ func TestHandler_VMPowerOn(t *testing.T) {
 		res, err := handler.VMPowerOn(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMPowerOnInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMPowerOnInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMPowerOnInternalServerError).Message)
 	})
 }
 
@@ -393,7 +393,7 @@ func TestHandler_VMPowerReset(t *testing.T) {
 		res, err := handler.VMPowerReset(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMPowerResetInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMPowerResetInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMPowerResetInternalServerError).Message)
 	})
 }
 
@@ -446,7 +446,7 @@ func TestHandler_VMRefresh(t *testing.T) {
 		res, err := handler.VMRefresh(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMRefreshInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMRefreshInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMRefreshInternalServerError).Message)
 	})
 }
 
@@ -499,7 +499,7 @@ func TestHandler_VMRestartGuestOS(t *testing.T) {
 		res, err := handler.VMRestartGuestOS(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMRestartGuestOSInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMRestartGuestOSInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMRestartGuestOSInternalServerError).Message)
 	})
 }
 
@@ -552,7 +552,7 @@ func TestHandler_VMShutdownGuestOS(t *testing.T) {
 		res, err := handler.VMShutdownGuestOS(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMShutdownGuestOSInternalServerError{}, res)
-		assert.Equal(t, "Failed to create VM request", res.(*api.VMShutdownGuestOSInternalServerError).Message)
+		assert.Equal(t, "create failed", res.(*api.VMShutdownGuestOSInternalServerError).Message)
 	})
 }
 
@@ -718,12 +718,12 @@ func TestHandler_GetVirtualMachineRequestList(t *testing.T) {
 			GetAllVMRequestsWithInstances(gomock.Any()).
 			Return([]*modals.VMRequest{
 				{
-					RequestID:      "req-001",
-					Operation:      "DEPLOY",
-					RequestStatus:  "NEW",
-					WorkspaceId:    "ws-001",
-					DatacenterId:   "dc-001",
-					CreatedAt:      time.Now(),
+					RequestID:       "req-001",
+					Operation:       "DEPLOY",
+					RequestStatus:   "NEW",
+					WorkspaceId:     "ws-001",
+					DatacenterId:    "dc-001",
+					CreatedAt:       time.Now(),
 					RequestMetadata: `{"key":"value"}`,
 				},
 			}, []*modals.VMDeployInstance{
