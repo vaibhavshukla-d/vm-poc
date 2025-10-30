@@ -15,9 +15,9 @@ import (
 	"vm/internal/modals"
 	"vm/internal/service"
 
+	mock_repo "vm/internal/repo/mock"
 	"vm/pkg/constants"
-	mock_repo "vm/tests/unit/internal/repo/mock"
-	mock_logger "vm/tests/unit/logger"
+	mock_logger "vm/pkg/logger/mock"
 )
 
 func TestCreateVMRequest(t *testing.T) {

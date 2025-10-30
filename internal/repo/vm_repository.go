@@ -8,7 +8,8 @@ import (
 	"vm/pkg/db"
 )
 
-//go:generate mockgen -source=vm_repository.go -destination=../../tests/unit/internal/repo/mock/vm_repositoryMock.go
+
+//go:generate mockgen -source=vm_repository.go -destination=mock/vm_repositoryMock.go
 type VMRepository interface {
 	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)

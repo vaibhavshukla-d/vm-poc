@@ -13,8 +13,7 @@ import (
 )
 
 // VMService defines the interface for VM-related business logic.
-//
-//go:generate mockgen -source=vm_service.go -destination=../../tests/unit/internal/service/mock/vm_serviceMock.go
+//go:generate mockgen -source=vm_service.go -destination=mock/vm_serviceMock.go
 type VMService interface {
 	CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, error)
 	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)

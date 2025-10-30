@@ -13,9 +13,9 @@ import (
 
 	"vm/internal/modals"
 	"vm/internal/repo"
-	mock_db "vm/tests/unit/pkg/db/mock"
+	mock_db "vm/pkg/db/mock"
 
-	mock_logger "vm/tests/unit/logger"
+	mock_logger "vm/pkg/logger/mock"
 
 	"github.com/golang/mock/gomock"
 )
