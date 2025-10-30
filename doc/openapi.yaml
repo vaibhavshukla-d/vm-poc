@@ -609,7 +609,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         "200":
           content:
@@ -1837,7 +1836,6 @@ components:
       properties:
         requestId:
           type: string
-          format: uuid
         operation:
           type: string
           enum:
@@ -1881,7 +1879,6 @@ components:
       properties:
         requestId:
           type: string
-          format: uuid
         vmId:
           type: string
         vmName:
