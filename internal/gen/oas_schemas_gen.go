@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
-	"github.com/google/uuid"
 )
 
 type Bearer struct {
@@ -2154,7 +2153,7 @@ func (*VMDeleteUnauthorized) vMDeleteRes() {}
 
 // Ref: #/components/schemas/VMDeployInstance
 type VMDeployInstance struct {
-	RequestId      uuid.UUID      `json:"requestId"`
+	RequestId      string         `json:"requestId"`
 	VmId           OptString      `json:"vmId"`
 	VmName         string         `json:"vmName"`
 	VmStatus       string         `json:"vmStatus"`
@@ -2163,7 +2162,7 @@ type VMDeployInstance struct {
 }
 
 // GetRequestId returns the value of RequestId.
-func (s *VMDeployInstance) GetRequestId() uuid.UUID {
+func (s *VMDeployInstance) GetRequestId() string {
 	return s.RequestId
 }
 
@@ -2193,7 +2192,7 @@ func (s *VMDeployInstance) GetCompletedAt() OptNilDateTime {
 }
 
 // SetRequestId sets the value of RequestId.
-func (s *VMDeployInstance) SetRequestId(val uuid.UUID) {
+func (s *VMDeployInstance) SetRequestId(val string) {
 	s.RequestId = val
 }
 
@@ -2328,7 +2327,7 @@ func (*VMRefreshUnauthorized) vMRefreshRes() {}
 
 // Ref: #/components/schemas/VMRequest
 type VMRequest struct {
-	RequestId     uuid.UUID              `json:"requestId"`
+	RequestId     string                 `json:"requestId"`
 	Operation     VMRequestOperation     `json:"operation"`
 	RequestStatus VMRequestRequestStatus `json:"requestStatus"`
 	WorkspaceId   OptString              `json:"workspaceId"`
@@ -2340,7 +2339,7 @@ type VMRequest struct {
 }
 
 // GetRequestId returns the value of RequestId.
-func (s *VMRequest) GetRequestId() uuid.UUID {
+func (s *VMRequest) GetRequestId() string {
 	return s.RequestId
 }
 
@@ -2380,7 +2379,7 @@ func (s *VMRequest) GetRequestMetadata() string {
 }
 
 // SetRequestId sets the value of RequestId.
-func (s *VMRequest) SetRequestId(val uuid.UUID) {
+func (s *VMRequest) SetRequestId(val string) {
 	s.RequestId = val
 }
 

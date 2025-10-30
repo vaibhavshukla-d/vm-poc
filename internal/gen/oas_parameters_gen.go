@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -89,7 +88,7 @@ func decodeEditVMParams(args [1]string, argsEscaped bool, r *http.Request) (para
 
 // GetVirtualMachineRequestParams is parameters of GetVirtualMachineRequest operation.
 type GetVirtualMachineRequestParams struct {
-	RequestID uuid.UUID
+	RequestID string
 }
 
 func unpackGetVirtualMachineRequestParams(packed middleware.Parameters) (params GetVirtualMachineRequestParams) {
@@ -98,7 +97,7 @@ func unpackGetVirtualMachineRequestParams(packed middleware.Parameters) (params 
 			Name: "request-id",
 			In:   "path",
 		}
-		params.RequestID = packed[key].(uuid.UUID)
+		params.RequestID = packed[key].(string)
 	}
 	return params
 }
@@ -128,7 +127,7 @@ func decodeGetVirtualMachineRequestParams(args [1]string, argsEscaped bool, r *h
 					return err
 				}
 
-				c, err := conv.ToUUID(val)
+				c, err := conv.ToString(val)
 				if err != nil {
 					return err
 				}

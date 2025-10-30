@@ -15,7 +15,6 @@ import (
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -351,10 +350,7 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 // GetVirtualMachineRequest implements the GetVirtualMachineRequest operation
 func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVirtualMachineRequestParams) (api.GetVirtualMachineRequestRes, error) {
 	h.deps.Logger.Infof("GetVirtualMachineRequest handler invoked")
-
-	requestIDStr := params.RequestID.String()
-
-	vmRequest, err := h.VMService.GetVMRequest(ctx, requestIDStr)
+	vmRequest, err := h.VMService.GetVMRequest(ctx, params.RequestID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &api.GetVirtualMachineRequestNotFound{
@@ -363,26 +359,24 @@ func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVi
 		}
 		h.deps.Logger.Errorf("Failed to get VM request: %v", err)
 		return &api.GetVirtualMachineRequestInternalServerError{
-			Message: "Failed to get VM request",
+			Message: err.Error(),
 		}, nil
 	}
 
-	deployInstances, deployInstanceserr := h.VMService.GetVMDeployInstances(ctx, requestIDStr)
+	deployInstances, deployInstanceserr := h.VMService.GetVMDeployInstances(ctx, params.RequestID)
 	if deployInstanceserr != nil {
 		h.deps.Logger.Warnf("Failed to get VM deploy instances, but continuing execution as they are optional: %v", deployInstanceserr)
-		deployInstances = []*modals.VMDeployInstance{} // Initialize with an empty slice
-	}
-
-	requestID, requestIDerr := uuid.Parse(vmRequest.RequestID)
-	if requestIDerr != nil {
-		h.deps.Logger.Errorf("Failed to parse request ID: %v", requestIDerr)
-		return &api.GetVirtualMachineRequestInternalServerError{
-			Message: "Failed to parse request ID",
-		}, nil
+		if errors.Is(deployInstanceserr, gorm.ErrRecordNotFound) {
+			deployInstances = []*modals.VMDeployInstance{} // Initialize with an empty slice
+		} else {
+			return &api.GetVirtualMachineRequestInternalServerError{
+				Message: deployInstanceserr.Error(),
+			}, nil
+		}
 	}
 
 	apiVMRequest := api.VMRequest{
-		RequestId:       requestID,
+		RequestId:       vmRequest.RequestID,
 		Operation:       api.VMRequestOperation(vmRequest.Operation),
 		RequestStatus:   api.VMRequestRequestStatus(vmRequest.RequestStatus),
 		WorkspaceId:     api.NewOptString(vmRequest.WorkspaceId),
@@ -396,15 +390,8 @@ func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVi
 
 	apiDeployList := make([]api.VMDeployInstance, len(deployInstances))
 	for i, inst := range deployInstances {
-		instanceRequestID, err := uuid.Parse(inst.RequestID)
-		if err != nil {
-			h.deps.Logger.Errorf("Failed to parse instance request ID: %v", err)
-			return &api.GetVirtualMachineRequestInternalServerError{
-				Message: "Failed to parse instance request ID",
-			}, nil
-		}
 		apiDeployList[i] = api.VMDeployInstance{
-			RequestId:      instanceRequestID,
+			RequestId:      inst.RequestID,
 			VmId:           api.NewOptString(inst.VMID),
 			VmName:         inst.VMName,
 			VmStatus:       inst.VMStatus,
@@ -430,23 +417,15 @@ func (h *Handler) GetVirtualMachineRequestList(ctx context.Context) (api.GetVirt
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get VM request list: %v", err)
 		return &api.GetVirtualMachineRequestListInternalServerError{
-			Message: "Failed to get VM request list",
+			Message: err.Error(),
 		}, nil
 	}
 
 	// Create the response structure for VM requests
 	apiVMRequests := make([]api.VMRequest, len(vmRequests))
 	for i, vmRequest := range vmRequests {
-		requestID, err := uuid.Parse(vmRequest.RequestID)
-		if err != nil {
-			h.deps.Logger.Errorf("Failed to parse request ID: %v", err)
-			return &api.GetVirtualMachineRequestListInternalServerError{
-				Message: "Failed to parse request ID",
-			}, nil
-		}
-
 		apiVMRequests[i] = api.VMRequest{
-			RequestId:       requestID,
+			RequestId:       vmRequest.RequestID,
 			Operation:       api.VMRequestOperation(vmRequest.Operation),
 			RequestStatus:   api.VMRequestRequestStatus(vmRequest.RequestStatus),
 			WorkspaceId:     api.NewOptString(vmRequest.WorkspaceId),
@@ -462,15 +441,8 @@ func (h *Handler) GetVirtualMachineRequestList(ctx context.Context) (api.GetVirt
 	// Create the response structure for VM deploy instances
 	apiDeployList := make([]api.VMDeployInstance, len(deployInstances))
 	for i, inst := range deployInstances {
-		instanceRequestID, err := uuid.Parse(inst.RequestID)
-		if err != nil {
-			h.deps.Logger.Errorf("Failed to parse instance request ID: %v", err)
-			return &api.GetVirtualMachineRequestListInternalServerError{
-				Message: "Failed to parse instance request ID",
-			}, nil
-		}
 		apiDeployList[i] = api.VMDeployInstance{
-			RequestId:      instanceRequestID,
+			RequestId:      inst.RequestID,
 			VmId:           api.NewOptString(inst.VMID),
 			VmName:         inst.VMName,
 			VmStatus:       inst.VMStatus,

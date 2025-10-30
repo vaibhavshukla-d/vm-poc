@@ -3807,7 +3807,7 @@ func (s *VMDeployInstance) Encode(e *jx.Encoder) {
 func (s *VMDeployInstance) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("requestId")
-		json.EncodeUUID(e, s.RequestId)
+		e.Str(s.RequestId)
 	}
 	{
 		if s.VmId.Set {
@@ -3858,8 +3858,8 @@ func (s *VMDeployInstance) Decode(d *jx.Decoder) error {
 		case "requestId":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := json.DecodeUUID(d)
-				s.RequestId = v
+				v, err := d.Str()
+				s.RequestId = string(v)
 				if err != nil {
 					return err
 				}
@@ -4976,7 +4976,7 @@ func (s *VMRequest) Encode(e *jx.Encoder) {
 func (s *VMRequest) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("requestId")
-		json.EncodeUUID(e, s.RequestId)
+		e.Str(s.RequestId)
 	}
 	{
 		e.FieldStart("operation")
@@ -5037,8 +5037,8 @@ func (s *VMRequest) Decode(d *jx.Decoder) error {
 		case "requestId":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := json.DecodeUUID(d)
-				s.RequestId = v
+				v, err := d.Str()
+				s.RequestId = string(v)
 				if err != nil {
 					return err
 				}
