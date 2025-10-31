@@ -2,12 +2,14 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"vm/internal/modals"
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
 	"vm/pkg/db"
-)
 
+	"gorm.io/gorm"
+)
 
 //go:generate mockgen -source=vm_repository.go -destination=mock/vm_repositoryMock.go
 type VMRepository interface {
@@ -122,12 +124,22 @@ func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*mo
 	db := r.db.GetReader()
 
 	if err := db.WithContext(ctx).Find(&requests).Error; err != nil {
-		return nil, nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			requests = []*modals.VMRequest{} // return empty slice
+		} else {
+			return nil, nil, err
+		}
+
 	}
 
 	var instances []*modals.VMDeployInstance
 	if err := db.WithContext(ctx).Find(&instances).Error; err != nil {
-		return nil, nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			instances = []*modals.VMDeployInstance{} // return empty slice
+		} else {
+			return nil, nil, err
+		}
+
 	}
 
 	return requests, instances, nil
