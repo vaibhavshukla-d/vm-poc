@@ -428,4 +428,64 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		assert.Nil(t, requests)
 		assert.Nil(t, instances)
 	})
+
+	t.Run("RecordNotFound for requests", func(t *testing.T) {
+		sqlDB, mock, _ := sqlmock.New()
+		defer sqlDB.Close()
+
+		gormDB, _ := gorm.Open(mysql.New(mysql.Config{
+			Conn:                      sqlDB,
+			SkipInitializeWithVersion: true,
+		}), &gorm.Config{})
+
+		mockDB.EXPECT().GetReader().Return(gormDB)
+
+		mock.ExpectQuery("SELECT .* FROM `vm_requests`").
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		mock.ExpectQuery("SELECT .* FROM `vm_deploy_instances`").
+			WillReturnRows(sqlmock.NewRows([]string{
+				"request_id", "vm_name", "vm_id", "vm_status", "vm_state_message", "completed_at",
+			}).AddRow(
+				"req-001", "vm-1", "vmid-001", "INIT", "Starting", nil,
+			))
+
+		repo := repo.NewVMRepository(mockDB, mockLogger)
+		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
+
+		assert.NoError(t, err)
+		assert.Empty(t, requests)
+		assert.Len(t, instances, 1)
+	})
+
+	t.Run("RecordNotFound for instances", func(t *testing.T) {
+		sqlDB, mock, _ := sqlmock.New()
+		defer sqlDB.Close()
+
+		gormDB, _ := gorm.Open(mysql.New(mysql.Config{
+			Conn:                      sqlDB,
+			SkipInitializeWithVersion: true,
+		}), &gorm.Config{})
+
+		mockDB.EXPECT().GetReader().Return(gormDB).Times(1)
+
+		mock.ExpectQuery("SELECT .* FROM `vm_requests`").
+			WillReturnRows(sqlmock.NewRows([]string{
+				"request_id", "operation", "request_status", "workspace_id", "datacenter_id", "created_at", "completed_at", "request_metadata",
+			}).AddRow(
+				"req-001", "vmDeploy", "New", "workspace-001", "dc-001", time.Now(), nil, `{"key":"value"}`,
+			))
+
+		mock.ExpectQuery("SELECT .* FROM `vm_deploy_instances`").
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		repo := repo.NewVMRepository(mockDB, mockLogger)
+		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
+
+		assert.NoError(t, err)
+		assert.Len(t, requests, 1)
+		assert.Empty(t, instances)
+	})
+
+
 }
