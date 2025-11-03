@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	imagemanager "vm/internal/client/image_manager"
@@ -521,7 +522,8 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 		h.deps.Logger.Warnf("host with ID %s not found", hostID)
 		return errors.New("host not found for validation")
 	}
-	if matchedHost.Status != "OK" {
+	if strings.EqualFold(matchedHost.Status, "OK") {
+		h.deps.Logger.Warnf("host status %s", matchedHost.Status)
 		return errors.New("host is not active")
 	}
 	h.deps.Logger.Infof("Successfully validated host %s", hostID)
@@ -544,7 +546,8 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 		h.deps.Logger.Warnf("Cluster with ID %s not found", clusterID)
 		return errors.New("Cluster not found for validation")
 	}
-	if matchedHost.Status != "OK" {
+	if strings.EqualFold(matchedcluster.Status, "OK") {
+		h.deps.Logger.Warnf("Cluster status %s", matchedcluster.Status)
 		return errors.New("Cluster is not active")
 	}
 	h.deps.Logger.Infof("Successfully validated cluster %s", clusterID)
@@ -571,7 +574,8 @@ func (h *Handler) validateVMExists(ctx context.Context, vmID string, vmOperation
 	}
 	switch vmOperation {
 	case constants.VMReconfigure:
-		if constants.OperationType(res.Powerstate) == constants.VMPowerOff {
+		h.deps.Logger.Warnf("VM status: %s", res.Powerstate)
+		if strings.EqualFold(string(constants.OperationType(res.Powerstate)), string(constants.VMPowerOff)) {
 			h.deps.Logger.Warnf("VM %s is powered off and cannot be reconfigured", vmID)
 			return errors.New("VM is powered off and cannot be reconfigured")
 		}

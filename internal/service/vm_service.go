@@ -9,7 +9,7 @@ import (
 	"vm/internal/repo"
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
-	// utils "vm/pkg/utils"
+	utils "vm/pkg/utils"
 )
 
 // VMService defines the interface for VM-related business logic.
@@ -45,19 +45,18 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 		"metadata":  metadata,
 	})
 
-	// workspaceID, errUtlis := utils.GetWorkspaceIDFromContext(ctx)
-	// if errUtlis != nil {
-	// 	s.logger.Error(constants.Internal, constants.Api, "Missing or invalid workspace_id in context", map[constants.ExtraKey]interface{}{
-	// 		"error": errUtlis.Error(),
-	// 	})
-	// 	return nil, errUtlis
-	// }
+	workspaceID, errUtlis := utils.GetWorkspaceIDFromContext(ctx)
+	if errUtlis != nil {
+		s.logger.Error(constants.Internal, constants.Api, "Missing or invalid workspace_id in context", map[constants.ExtraKey]interface{}{
+			"error": errUtlis.Error(),
+		})
+	}
 
 	vmRequest := &modals.VMRequest{
 		Operation:       string(operation),
 		RequestStatus:   string(status),
 		RequestMetadata: metadata,
-		// WorkspaceId:     workspaceID,
+		WorkspaceId:     workspaceID,
 	}
 	err := s.vmRepo.CreateVMRequest(ctx, vmRequest)
 	if err != nil {
