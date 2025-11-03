@@ -758,3 +758,25 @@ func TestHandler_GetVirtualMachineRequestList(t *testing.T) {
 		assert.Equal(t, "db failure", res.(*api.GetVirtualMachineRequestListInternalServerError).Message)
 	})
 }
+
+func TestSecurityHandler_HandleBearer(t *testing.T) {
+	handler := handler_impl.NewSecurityHandler()
+	ctx := context.Background()
+	op := api.OperationName("VMRefresh")
+
+	t.Run("Failure - missing token", func(t *testing.T) {
+		bearer := api.Bearer{Token: ""}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.Nil(t, newCtx)
+		assert.EqualError(t, err, "Missing Bearer token")
+	})
+
+	t.Run("Success - valid token", func(t *testing.T) {
+		bearer := api.Bearer{Token: "valid-token"}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.NoError(t, err)
+		assert.Equal(t, ctx, newCtx)
+	})
+}
