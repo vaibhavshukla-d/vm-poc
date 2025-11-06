@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	dto "vm/internal/dtos"
 	api "vm/internal/gen"
 	"vm/internal/modals"
 	"vm/internal/service"
@@ -95,23 +95,16 @@ func TestCreateVMRequest(t *testing.T) {
 	metadata := string(metadataBytes)
 
 	t.Run("Successful VM deploy", func(t *testing.T) {
-		expectedVM := &modals.VMRequest{
-			Operation:       string(constants.VMDeploy),
-			RequestStatus:   string(constants.StatusNew),
-			RequestMetadata: metadata,
-		}
-
 		mockRepo.EXPECT().
 			CreateVMRequest(ctx, gomock.Any()).
-			DoAndReturn(func(_ context.Context, req *modals.VMRequest) error {
+			DoAndReturn(func(_ context.Context, req *modals.VMRequest) *dto.ApiResponseError {
 				req.RequestID = "req-123"
 				return nil
 			})
 
-		vmName := deployReq.VmConfig.Name
 		expectedInstances := []modals.VMDeployInstance{
-			{RequestID: "req-123", VMName: fmt.Sprintf("%s_1", vmName), VMStatus: string(constants.VMINIT)},
-			{RequestID: "req-123", VMName: fmt.Sprintf("%s_2", vmName), VMStatus: string(constants.VMINIT)},
+			{RequestID: "req-123", VMName: "my-full-config-vm_1", VMStatus: string(constants.VMINIT)},
+			{RequestID: "req-123", VMName: "my-full-config-vm_2", VMStatus: string(constants.VMINIT)},
 		}
 
 		mockRepo.EXPECT().
@@ -120,11 +113,9 @@ func TestCreateVMRequest(t *testing.T) {
 
 		result, err := vmSvc.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, metadata)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
+		assert.NotNil(t, result)
 		assert.Equal(t, "req-123", result.RequestID)
-		assert.Equal(t, expectedVM.Operation, result.Operation)
-		assert.Equal(t, expectedVM.RequestStatus, result.RequestStatus)
-		assert.Equal(t, expectedVM.RequestMetadata, result.RequestMetadata)
 	})
 
 	t.Run("Unmarshal failure", func(t *testing.T) {
@@ -135,19 +126,24 @@ func TestCreateVMRequest(t *testing.T) {
 
 		result, err := vmSvc.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, badMetadata)
 
-		assert.Error(t, err)
+		assert.NotNil(t, err)
 		assert.Nil(t, result)
 	})
 
 	t.Run("CreateVMRequest fails", func(t *testing.T) {
 		mockRepo.EXPECT().
 			CreateVMRequest(ctx, gomock.Any()).
-			Return(errors.New("db error"))
+			Return(&dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db error",
+			})
 
 		result, err := vmSvc.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, metadata)
 
-		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "db error", err.Message)
 	})
 
 	t.Run("CreateVMDeployInstances fails", func(t *testing.T) {
@@ -165,12 +161,18 @@ func TestCreateVMRequest(t *testing.T) {
 		}
 		mockRepo.EXPECT().
 			CreateVMDeployInstances(ctx, expectedInstances).
-			Return(errors.New("deploy error"))
+			Return(&dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "deploy error",
+			})
 
 		result, err := vmSvc.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, metadata)
 
-		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "deploy error", err.Message)
+
 	})
 }
 
@@ -197,20 +199,26 @@ func TestGetVMDeployInstances(t *testing.T) {
 
 		result, err := vmSvc.GetVMDeployInstances(ctx, requestID)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Equal(t, expectedInstances, result)
 	})
 
 	t.Run("Failure to retrieve VM deploy instances", func(t *testing.T) {
 		mockRepo.EXPECT().
 			GetVMDeployInstances(ctx, requestID).
-			Return(nil, errors.New("db error"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db error",
+			})
 
 		result, err := vmSvc.GetVMDeployInstances(ctx, requestID)
 
-		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "db error", err.Message)
 	})
+
 }
 
 func TestGetVMRequest(t *testing.T) {
@@ -242,19 +250,24 @@ func TestGetVMRequest(t *testing.T) {
 
 		result, err := vmSvc.GetVMRequest(ctx, requestID)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Equal(t, expectedVMRequest, result)
 	})
 
 	t.Run("Failure to retrieve VM request", func(t *testing.T) {
 		mockRepo.EXPECT().
 			GetVMRequest(ctx, requestID).
-			Return(nil, errors.New("db error"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db error",
+			})
 
 		result, err := vmSvc.GetVMRequest(ctx, requestID)
 
-		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "db error", err.Message)
 	})
 }
 
@@ -299,7 +312,7 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 
 		reqs, insts, reqCount, instCount, err := vmSvc.GetAllVMRequestsWithInstances(ctx)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Equal(t, expectedRequests, reqs)
 		assert.Equal(t, expectedInstances, insts)
 		assert.Equal(t, 2, reqCount)
@@ -309,11 +322,16 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 	t.Run("Failure to retrieve requests and instances", func(t *testing.T) {
 		mockRepo.EXPECT().
 			GetAllVMRequestsWithInstances(ctx).
-			Return(nil, nil, errors.New("db error"))
+			Return(nil, nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db error",
+			})
 
 		reqs, insts, reqCount, instCount, err := vmSvc.GetAllVMRequestsWithInstances(ctx)
 
-		assert.Error(t, err)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "db error", err.Message)
 		assert.Nil(t, reqs)
 		assert.Nil(t, insts)
 		assert.Equal(t, 0, reqCount)

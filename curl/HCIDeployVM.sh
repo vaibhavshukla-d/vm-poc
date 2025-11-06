@@ -1,4 +1,4 @@
-curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines' \
+curl -X POST 'http://ind-south.api.qa-greenlake.hpe.com/virtualization/v1beta1/virtual-machines' \
 
 --header 'Content-Type: application/json' \
 
@@ -8,21 +8,21 @@ curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines' 
 
   "destination": {
 
-    "clusterId": "cluster-uuid-123",
+    "clusterId": "/DC0/host/DC0_C0",
 
     "folderId": "folder-uuid-456",
 
-    "hostId": "host-uuid-789",
+    "hostId": "/DC0/host/DC0_C0/DC0_C0_H1",
 
-    "resourcePoolId": "rp-uuid-101"
+    "resourcePoolId": "/DC0/host/DC0_H0/Resources"
 
   },
 
   "imageSource": {
 
-    "imageId": "image-uuid-212",
+    "imageId": "ubuntu",
 
-    "imageName": "ubuntu-22.04-template",
+    "imageName": "http://global.api.greenlake.hpe.com/api/images/ubuntu-22.04.ova",
 
     "imageSourceType": "HYPERVISOR_IMAGE_LIBRARY"
 
@@ -48,7 +48,7 @@ curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines' 
 
   "storageConfig": {
 
-    "defaultDatastoreId": "datastore-uuid-414",
+    "defaultDatastoreId": "LocalDS_0",
 
     "provisioningType": "THIN"
 
@@ -62,7 +62,7 @@ curl --location 'http://localhost:8080/virtualization/v1beta1/virtual-machines' 
 
     "locale": "en-US",
 
-    "name": "my-full-config-vm",
+    "name": "alphaVM",
 
     "numberOfVms": 1,
 

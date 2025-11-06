@@ -7,6 +7,7 @@ package mock_repo
 import (
 	context "context"
 	reflect "reflect"
+	dto "vm/internal/dtos"
 	modals "vm/internal/modals"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,10 +37,10 @@ func (m *MockVMRepository) EXPECT() *MockVMRepositoryMockRecorder {
 }
 
 // CreateVMDeployInstances mocks base method.
-func (m *MockVMRepository) CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) error {
+func (m *MockVMRepository) CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) *dto.ApiResponseError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVMDeployInstances", ctx, instances)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*dto.ApiResponseError)
 	return ret0
 }
 
@@ -50,10 +51,10 @@ func (mr *MockVMRepositoryMockRecorder) CreateVMDeployInstances(ctx, instances i
 }
 
 // CreateVMRequest mocks base method.
-func (m *MockVMRepository) CreateVMRequest(ctx context.Context, req *modals.VMRequest) error {
+func (m *MockVMRepository) CreateVMRequest(ctx context.Context, req *modals.VMRequest) *dto.ApiResponseError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVMRequest", ctx, req)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*dto.ApiResponseError)
 	return ret0
 }
 
@@ -64,12 +65,12 @@ func (mr *MockVMRepositoryMockRecorder) CreateVMRequest(ctx, req interface{}) *g
 }
 
 // GetAllVMRequestsWithInstances mocks base method.
-func (m *MockVMRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error) {
+func (m *MockVMRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, *dto.ApiResponseError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllVMRequestsWithInstances", ctx)
 	ret0, _ := ret[0].([]*modals.VMRequest)
 	ret1, _ := ret[1].([]*modals.VMDeployInstance)
-	ret2, _ := ret[2].(error)
+	ret2, _ := ret[2].(*dto.ApiResponseError)
 	return ret0, ret1, ret2
 }
 
@@ -80,11 +81,11 @@ func (mr *MockVMRepositoryMockRecorder) GetAllVMRequestsWithInstances(ctx interf
 }
 
 // GetVMDeployInstances mocks base method.
-func (m *MockVMRepository) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error) {
+func (m *MockVMRepository) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, *dto.ApiResponseError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVMDeployInstances", ctx, requestID)
 	ret0, _ := ret[0].([]*modals.VMDeployInstance)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*dto.ApiResponseError)
 	return ret0, ret1
 }
 
@@ -95,11 +96,11 @@ func (mr *MockVMRepositoryMockRecorder) GetVMDeployInstances(ctx, requestID inte
 }
 
 // GetVMRequest mocks base method.
-func (m *MockVMRepository) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error) {
+func (m *MockVMRepository) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, *dto.ApiResponseError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVMRequest", ctx, requestID)
 	ret0, _ := ret[0].(*modals.VMRequest)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*dto.ApiResponseError)
 	return ret0, ret1
 }
 

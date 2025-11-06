@@ -23,6 +23,7 @@ import (
 	"vm/internal/service"
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
+	"vm/pkg/middleware"
 )
 
 func main() {
@@ -64,7 +65,8 @@ func main() {
 
 	// Start main application server
 	addr := ":" + deps.Config.App.Application.Port
-	httpServer := &http.Server{Addr: addr, Handler: server}
+	wrappedHandler := middleware.RecoveryMiddleware(deps.Logger)(middleware.RequestIDMiddleware(server))
+	httpServer := &http.Server{Addr: addr, Handler: wrappedHandler}
 
 	// Start metrics server on a separate port
 	metricsServer := &http.Server{

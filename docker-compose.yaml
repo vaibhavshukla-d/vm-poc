@@ -8,11 +8,13 @@ services:
       - "8080:8080"
       - "9091:9090"
     environment:
-      # Database connection (these match your Go env variable keys)
+      # Application & dependencies
       - APP_PORT=8080
       - IMAGE_MANAGER_SERVICE_NAME=image-manager:8081
       - INFRA_MONITOR_SERVICE_NAME=infra-monitor:8082
       - VM_MONITOR_SERVICE_NAME=vm-monitor:8083
+
+      # Database connection
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=root
@@ -21,8 +23,11 @@ services:
       - DB_MAX_IDLE=10
       - DB_MAX_OPEN=100
       - DB_CONN_LIFETIME=60
+
+      # App behavior
       - CLIENT_URL=http://app:8080
-      - VALIDATE_CLIENT_REQUEST=false
+      - VALIDATE_CLIENT_REQUEST=true
+
     depends_on:
       db:
         condition: service_healthy
@@ -37,15 +42,17 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: test@123
       MYSQL_DATABASE: vmdb
+      MYSQL_USER: root
     ports:
       - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ptest@123"]
+      interval: 5s     # ✅ check every 5s
+      timeout: 10s
+      retries: 10      # ✅ increase retries (MySQL init can take >40s)
+      start_period: 20s  # ✅ wait 20s before first health check
     networks:
       - vm-network
 
@@ -63,10 +70,11 @@ services:
       - "--storage.tsdb.path=/prometheus"
       - "--web.console.libraries=/usr/share/prometheus/console_libraries"
       - "--web.console.templates=/usr/share/prometheus/consoles"
+    depends_on:
+      app:
+        condition: service_started 
     networks:
       - vm-network
-    depends_on:
-      - app
 
 volumes:
   db_data:
@@ -75,3 +83,4 @@ volumes:
 networks:
   vm-network:
     driver: bridge
+
