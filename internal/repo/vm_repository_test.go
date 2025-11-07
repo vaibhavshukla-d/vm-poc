@@ -172,7 +172,7 @@ func TestGetVMRequest(t *testing.T) {
 		mockDB.EXPECT().GetReader().Return(gormDB)
 
 		mock.ExpectQuery("SELECT .* FROM `vm_requests` WHERE request_id = ?").
-			WithArgs(requestID,1).
+			WithArgs(requestID, 1).
 			WillReturnError(gorm.ErrRecordNotFound)
 
 		repo := repo.NewVMRepository(mockDB, mockLogger)
@@ -225,7 +225,7 @@ func TestGetVMDeployInstances(t *testing.T) {
 		assert.Equal(t, "vm-2", result[1].VMName)
 	})
 
-		t.Run("No records found", func(t *testing.T) {
+	t.Run("No records found", func(t *testing.T) {
 		sqlDB, mock, _ := sqlmock.New()
 		defer sqlDB.Close()
 
@@ -238,16 +238,15 @@ func TestGetVMDeployInstances(t *testing.T) {
 
 		mock.ExpectQuery("SELECT .* FROM `vm_deploy_instances` WHERE request_id = ?").
 			WithArgs(requestID).
-			WillReturnRows(sqlmock.NewRows([]string{
-				"request_id", "vm_name", "vm_id", "vm_status", "vm_state_message", "completed_at",
-			})) // no rows
+			WillReturnError(gorm.ErrRecordNotFound)
 
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMDeployInstances(ctx, requestID)
 
-		assert.Nil(t, err)
-		assert.NotNil(t, result)
-		assert.Len(t, result, 0)
+		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, "VMDeployInstances not found", err.Message)
+		assert.Equal(t, constants.SQLRecordNotFoundErrorCode, err.ErrorCode)
 	})
 	t.Run("Query error", func(t *testing.T) {
 		sqlDB, mock, _ := sqlmock.New()

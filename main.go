@@ -50,7 +50,7 @@ func main() {
 
 	// Initialize handlers
 	handler := handler_impl.NewHandler(vmService, deps)
-	securityHandler := handler_impl.NewSecurityHandler()
+	securityHandler := handler_impl.NewSecurityHandler(deps.Logger)
 
 	// Create new server with OTel support
 	server, err := api.NewServer(

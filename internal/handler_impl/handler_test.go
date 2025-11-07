@@ -2,7 +2,6 @@ package handler_impl_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 	dto "vm/internal/dtos"
@@ -12,6 +11,7 @@ import (
 	configmanager "vm/pkg/config-manager"
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
+	"vm/pkg/utils"
 
 	mock_logger "vm/pkg/logger/mock"
 
@@ -660,7 +660,6 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 				Message:   "VM request not found",
 			})
 
-
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.GetVirtualMachineRequestNotFound{}, res)
@@ -671,7 +670,10 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 	t.Run("Failure - unexpected error from GetVMRequest", func(t *testing.T) {
 		mockVMService.EXPECT().
 			GetVMRequest(gomock.Any(), requestID).
-			Return(nil, errors.New("db failure"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db failure",
+			})
 
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
@@ -714,7 +716,7 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 				RequestMetadata: `{"key":"value"}`,
 			}, nil)
 
-	mockVMService.EXPECT().
+		mockVMService.EXPECT().
 			GetVMDeployInstances(gomock.Any(), requestID).
 			Return(nil, &dto.ApiResponseError{
 				ErrorCode: constants.InternalServerErrorCode,
@@ -809,7 +811,8 @@ func TestHandler_GetVirtualMachineRequestList(t *testing.T) {
 }
 
 func TestSecurityHandler_HandleBearer(t *testing.T) {
-	handler := handler_impl.NewSecurityHandler()
+	mockLogger := &mock_logger.StubLogger{}
+	handler := handler_impl.NewSecurityHandler(mockLogger)
 	ctx := context.Background()
 	op := api.OperationName("VMRefresh")
 
@@ -821,11 +824,38 @@ func TestSecurityHandler_HandleBearer(t *testing.T) {
 		assert.EqualError(t, err, "Missing Bearer token")
 	})
 
-	t.Run("Success - valid token", func(t *testing.T) {
-		bearer := api.Bearer{Token: "valid-token"}
+	t.Run("Failure - invalid token format", func(t *testing.T) {
+		bearer := api.Bearer{Token: "invalid-token"}
 		newCtx, err := handler.HandleBearer(ctx, op, bearer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, ctx, newCtx)
 	})
+
+	t.Run("Success - valid token with id", func(t *testing.T) {
+		bearer := api.Bearer{
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOiIxMjNlZmUyMzIzZXIiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyfQ.zVdGW_T3sBFHYieKeawwq2znn87HUMU8qWjTQ7Ni9vw",
+		}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.NoError(t, err)
+
+		// Check if workspace_id is set in context
+		val := newCtx.Value(utils.WorkspaceIDKey)
+		assert.Equal(t, "123efe2323er", val)
+	})
+	t.Run("Success - valid token without id", func(t *testing.T) {
+		// Token with no "id" claim
+		bearer := api.Bearer{
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYWRtaW4ifQ.",
+		}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.NoError(t, err)
+
+		// workspace_id should not be set
+		val := newCtx.Value(utils.WorkspaceIDKey)
+		assert.Nil(t, val)
+	})
+
 }
