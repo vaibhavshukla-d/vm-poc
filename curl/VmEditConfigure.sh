@@ -1,4 +1,4 @@
-curl --location http://localhost:8080/virtualization/v1beta1/virtual-machines/101/update-hardware \
+curl -i -X POST http://ind-south.api.qa-greenlake.hpe.com/virtualization/v1beta1/virtual-machines/101/update-hardware \
   --header 'Authorization: Bearer TEST' \
   --header 'Content-Type: application/json' \
   --data '{
