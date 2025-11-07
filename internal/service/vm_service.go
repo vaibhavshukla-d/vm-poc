@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	dto "vm/internal/dtos"
 	api "vm/internal/gen"
 	"vm/internal/modals"
 	"vm/internal/repo"
@@ -13,12 +14,13 @@ import (
 )
 
 // VMService defines the interface for VM-related business logic.
+//
 //go:generate mockgen -source=vm_service.go -destination=mock/vm_serviceMock.go
 type VMService interface {
-	CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, error)
-	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
-	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
-	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, int, int, error)
+	CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, *dto.ApiResponseError)
+	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, *dto.ApiResponseError)
+	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, *dto.ApiResponseError)
+	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, int, int, *dto.ApiResponseError)
 }
 
 // vmService implements the VMService interface.
@@ -36,7 +38,7 @@ func NewVMService(vmRepo repo.VMRepository, logger cinterface.Logger) VMService 
 }
 
 // DeployVM handles the business logic for deploying a VM.
-func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, error) {
+func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.OperationType, status constants.RequestStatus, metadata string) (*modals.VMRequest, *dto.ApiResponseError) {
 	s.logger.Info(constants.Internal, constants.Api, "CreateVMRequest service function invoked", nil)
 
 	s.logger.Info(constants.Internal, constants.Api, "VMRequest payload log", map[constants.ExtraKey]interface{}{
@@ -61,7 +63,7 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 	err := s.vmRepo.CreateVMRequest(ctx, vmRequest)
 	if err != nil {
 		s.logger.Error(constants.Internal, constants.Api, "Failed to deploy VM", map[constants.ExtraKey]interface{}{
-			"error": err.Error(),
+			"error": err.Message,
 		})
 		return nil, err
 	}
@@ -73,7 +75,7 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 			s.logger.Error(constants.Internal, constants.Api, "Failed to unmarshal deploy metadata", map[constants.ExtraKey]interface{}{
 				"error": err.Error(),
 			})
-			return nil, err
+			return nil, &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: err.Error()}
 		}
 
 		numVMs := deployReq.VmConfig.NumberOfVms.Value
@@ -91,7 +93,7 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 
 			if err := s.vmRepo.CreateVMDeployInstances(ctx, instances); err != nil {
 				s.logger.Error(constants.Internal, constants.Api, "Failed to create VM deploy instances", map[constants.ExtraKey]interface{}{
-					"error": err.Error(),
+					"error": err.Message,
 				})
 				return nil, err
 			}
@@ -104,13 +106,13 @@ func (s *vmService) CreateVMRequest(ctx context.Context, operation constants.Ope
 }
 
 // GetVMDeployInstances handles the business logic for retrieving VM deploy instances.
-func (s *vmService) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error) {
+func (s *vmService) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, *dto.ApiResponseError) {
 	s.logger.Info(constants.Internal, constants.Api, "GetVMDeployInstances service function invoked", nil)
 
 	instances, err := s.vmRepo.GetVMDeployInstances(ctx, requestID)
 	if err != nil {
 		s.logger.Error(constants.Internal, constants.Api, "Failed to get VM deploy instances", map[constants.ExtraKey]interface{}{
-			"error": err.Error(),
+			"error": err.Message,
 		})
 		return nil, err
 	}
@@ -121,13 +123,13 @@ func (s *vmService) GetVMDeployInstances(ctx context.Context, requestID string) 
 }
 
 // GetVMRequest handles the business logic for retrieving a VM request.
-func (s *vmService) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error) {
+func (s *vmService) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, *dto.ApiResponseError) {
 	s.logger.Info(constants.Internal, constants.Api, "GetVMRequest service function invoked", nil)
 
 	vmRequest, err := s.vmRepo.GetVMRequest(ctx, requestID)
 	if err != nil {
 		s.logger.Error(constants.Internal, constants.Api, "Failed to get VM request", map[constants.ExtraKey]interface{}{
-			"error": err.Error(),
+			"error": err.Message,
 		})
 		return nil, err
 	}
@@ -137,13 +139,13 @@ func (s *vmService) GetVMRequest(ctx context.Context, requestID string) (*modals
 	return vmRequest, nil
 }
 
-func (s *vmService) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, int, int, error) {
+func (s *vmService) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, int, int, *dto.ApiResponseError) {
 	s.logger.Info(constants.Internal, constants.Api, "GetAllVMRequestsWithInstances service function invoked", nil)
 
 	vmRequests, vmInstances, err := s.vmRepo.GetAllVMRequestsWithInstances(ctx)
 	if err != nil {
 		s.logger.Error(constants.Internal, constants.Api, "Failed to get all VM requests and instances", map[constants.ExtraKey]interface{}{
-			"error": err.Error(),
+			"error": err.Message,
 		})
 		return nil, nil, 0, 0, err
 	}

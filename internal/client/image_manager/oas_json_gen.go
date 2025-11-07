@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
-	"github.com/ogen-go/ogen/json"
 	"github.com/ogen-go/ogen/validate"
 )
 
@@ -47,7 +46,7 @@ func (s *HypervisorImage) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("image_url")
-		json.EncodeURI(e, s.ImageURL)
+		e.Str(s.ImageURL)
 	}
 }
 
@@ -145,8 +144,8 @@ func (s *HypervisorImage) Decode(d *jx.Decoder) error {
 		case "image_url":
 			requiredBitSet[0] |= 1 << 6
 			if err := func() error {
-				v, err := json.DecodeURI(d)
-				s.ImageURL = v
+				v, err := d.Str()
+				s.ImageURL = string(v)
 				if err != nil {
 					return err
 				}

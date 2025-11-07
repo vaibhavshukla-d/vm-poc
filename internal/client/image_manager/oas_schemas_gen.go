@@ -2,10 +2,6 @@
 
 package client
 
-import (
-	"net/url"
-)
-
 type Bearer struct {
 	Token string
 	Roles []string
@@ -46,7 +42,7 @@ type HypervisorImage struct {
 	// Size of the image in gigabytes.
 	SizeGB float32 `json:"size_gb"`
 	// Direct URL to download or access the image.
-	ImageURL url.URL `json:"image_url"`
+	ImageURL string `json:"image_url"`
 }
 
 // GetID returns the value of ID.
@@ -80,7 +76,7 @@ func (s *HypervisorImage) GetSizeGB() float32 {
 }
 
 // GetImageURL returns the value of ImageURL.
-func (s *HypervisorImage) GetImageURL() url.URL {
+func (s *HypervisorImage) GetImageURL() string {
 	return s.ImageURL
 }
 
@@ -115,6 +111,6 @@ func (s *HypervisorImage) SetSizeGB(val float32) {
 }
 
 // SetImageURL sets the value of ImageURL.
-func (s *HypervisorImage) SetImageURL(val url.URL) {
+func (s *HypervisorImage) SetImageURL(val string) {
 	s.ImageURL = val
 }

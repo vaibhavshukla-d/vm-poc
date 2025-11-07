@@ -13,6 +13,7 @@ import (
 
 	"vm/internal/modals"
 	"vm/internal/repo"
+	"vm/pkg/constants"
 	mock_db "vm/pkg/db/mock"
 
 	mock_logger "vm/pkg/logger/mock"
@@ -60,7 +61,7 @@ func TestCreateVMRequest(t *testing.T) {
 		}
 
 		err := repo.CreateVMRequest(ctx, req)
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Insert failure", func(t *testing.T) {
@@ -94,8 +95,8 @@ func TestCreateVMRequest(t *testing.T) {
 		}
 
 		err := repo.CreateVMRequest(ctx, req)
-		assert.Error(t, err)
-		assert.Equal(t, "insert error", err.Error())
+		assert.NotNil(t, err)
+		assert.Equal(t, "insert error", err.Message)
 	})
 }
 
@@ -130,7 +131,7 @@ func TestGetVMRequest(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMRequest(ctx, requestID)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.NotNil(t, result)
 		assert.Equal(t, requestID, result.RequestID)
 	})
@@ -153,9 +154,36 @@ func TestGetVMRequest(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMRequest(ctx, requestID)
 
-		assert.Error(t, err)
+		assert.NotNil(t, err)
 		assert.Nil(t, result)
+		assert.Equal(t, "query failed", err.Message)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+
 	})
+	t.Run("Query error - record not found", func(t *testing.T) {
+		sqlDB, mock, _ := sqlmock.New()
+		defer sqlDB.Close()
+
+		gormDB, _ := gorm.Open(mysql.New(mysql.Config{
+			Conn:                      sqlDB,
+			SkipInitializeWithVersion: true,
+		}), &gorm.Config{})
+
+		mockDB.EXPECT().GetReader().Return(gormDB)
+
+		mock.ExpectQuery("SELECT .* FROM `vm_requests` WHERE request_id = ?").
+			WithArgs(requestID, 1).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		repo := repo.NewVMRepository(mockDB, mockLogger)
+		result, err := repo.GetVMRequest(ctx, requestID)
+
+		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, "VMRequest not found", err.Message)
+		assert.Equal(t, constants.SQLRecordNotFoundErrorCode, err.ErrorCode)
+	})
+
 }
 
 func TestGetVMDeployInstances(t *testing.T) {
@@ -191,7 +219,7 @@ func TestGetVMDeployInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMDeployInstances(ctx, requestID)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Len(t, result, 2)
 		assert.Equal(t, "vm-1", result[0].VMName)
 		assert.Equal(t, "vm-2", result[1].VMName)
@@ -210,17 +238,16 @@ func TestGetVMDeployInstances(t *testing.T) {
 
 		mock.ExpectQuery("SELECT .* FROM `vm_deploy_instances` WHERE request_id = ?").
 			WithArgs(requestID).
-			WillReturnRows(sqlmock.NewRows([]string{
-				"request_id", "vm_name", "vm_id", "vm_status", "vm_state_message", "completed_at",
-			})) // no rows
+			WillReturnError(gorm.ErrRecordNotFound)
 
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMDeployInstances(ctx, requestID)
 
-		assert.NoError(t, err)
-		assert.Len(t, result, 0)
+		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, "VMDeployInstances not found", err.Message)
+		assert.Equal(t, constants.SQLRecordNotFoundErrorCode, err.ErrorCode)
 	})
-
 	t.Run("Query error", func(t *testing.T) {
 		sqlDB, mock, _ := sqlmock.New()
 		defer sqlDB.Close()
@@ -239,9 +266,12 @@ func TestGetVMDeployInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		result, err := repo.GetVMDeployInstances(ctx, requestID)
 
-		assert.Error(t, err)
 		assert.Nil(t, result)
+		assert.NotNil(t, err)
+		assert.Equal(t, "query failed", err.Message)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
 	})
+
 }
 
 func TestCreateVMDeployInstances(t *testing.T) {
@@ -294,7 +324,7 @@ func TestCreateVMDeployInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		err := repo.CreateVMDeployInstances(ctx, instances)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Insert failure", func(t *testing.T) {
@@ -330,8 +360,8 @@ func TestCreateVMDeployInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		err := repo.CreateVMDeployInstances(ctx, instances)
 
-		assert.Error(t, err)
-		assert.Equal(t, "insert error", err.Error())
+		assert.NotNil(t, err)
+		assert.Equal(t, "insert error", err.Message)
 	})
 }
 
@@ -371,7 +401,7 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Len(t, requests, 1)
 		assert.Len(t, instances, 1)
 		assert.Equal(t, "req-001", requests[0].RequestID)
@@ -395,9 +425,11 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
 
-		assert.Error(t, err)
 		assert.Nil(t, requests)
 		assert.Nil(t, instances)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "query error", err.Message)
 	})
 
 	t.Run("Error fetching instances", func(t *testing.T) {
@@ -424,9 +456,11 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
 
-		assert.Error(t, err)
 		assert.Nil(t, requests)
 		assert.Nil(t, instances)
+		assert.NotNil(t, err)
+		assert.Equal(t, constants.InternalServerErrorCode, err.ErrorCode)
+		assert.Equal(t, "instance query error", err.Message)
 	})
 
 	t.Run("RecordNotFound for requests", func(t *testing.T) {
@@ -453,7 +487,7 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Empty(t, requests)
 		assert.Len(t, instances, 1)
 	})
@@ -482,10 +516,8 @@ func TestGetAllVMRequestsWithInstances(t *testing.T) {
 		repo := repo.NewVMRepository(mockDB, mockLogger)
 		requests, instances, err := repo.GetAllVMRequestsWithInstances(ctx)
 
-		assert.NoError(t, err)
+		assert.Nil(t, err)
 		assert.Len(t, requests, 1)
 		assert.Empty(t, instances)
 	})
-
-
 }

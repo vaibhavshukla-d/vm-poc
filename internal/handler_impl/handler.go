@@ -3,20 +3,17 @@ package handler_impl
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"strings"
 	"time"
 
 	imagemanager "vm/internal/client/image_manager"
 	inframonitor "vm/internal/client/infra_monitor"
 	vmmonitor "vm/internal/client/vm_monitor"
+	dto "vm/internal/dtos"
 	api "vm/internal/gen"
-	"vm/internal/modals"
 	"vm/internal/service"
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
-
-	"gorm.io/gorm"
 )
 
 // Handler implements the generated API interface
@@ -36,24 +33,24 @@ func NewHandler(vmService service.VMService, deps *dependency.Dependency) *Handl
 // EditVM implements the EditVM operation
 func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVMParams) (api.EditVMRes, error) {
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMReconfigure); err != nil {
-		return &api.EditVMInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMReconfigure, ctx)
+		return res.(api.EditVMRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal EditVm Request: %v", err)
-		return &api.EditVMInternalServerError{
-			Message: "Failed to marshal EditVm Request",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal EditVm Request",
+		}, constants.VMReconfigure, ctx)
+		return res.(api.EditVMRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMReconfigure, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to marshal EditVm Request: %v", vmRequesterr)
-		return &api.EditVMInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMReconfigure, ctx)
+		return res.(api.EditVMRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -71,17 +68,15 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 	// Validate image and get image path
 	imagePath, err := h.validateImage(ctx, req.ImageSource.Value.ImageId.Value)
 	if err != nil {
-		return &api.HCIDeployVMInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMDeploy, ctx)
+		return res.(api.HCIDeployVMRes), nil
 	}
 	req.ImageSource.Value.ImageName = api.NewOptString(imagePath)
 
 	// Validate host and cluster
 	if err := h.validateHost(ctx, req.Destination.Value.HostId.Value, req.Destination.Value.ClusterId.Value); err != nil {
-		return &api.HCIDeployVMInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMDeploy, ctx)
+		return res.(api.HCIDeployVMRes), nil
 	}
 
 	// Marshal the request to JSON to store as metadata
@@ -89,18 +84,19 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 	if metadataerr != nil {
 		h.deps.Logger.Errorf("Failed to marshal HCIDeployVM Request: %v", metadataerr)
 		// Handle marshaling error
-		return &api.HCIDeployVMInternalServerError{
-			Message: "Failed to marshal HCIDeployVM Request",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal HCIDeployVM Request",
+		}, constants.VMDeploy, ctx)
+		return res.(api.HCIDeployVMRes), nil
 	}
 
 	// Call the service to create the VM request
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM Deploy request: %v", vmRequesterr)
-		return &api.HCIDeployVMInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMDeploy, ctx)
+		return res.(api.HCIDeployVMRes), nil
 	}
 
 	// The vmRequest.RequestID is now populated by the BeforeCreate hook.
@@ -118,24 +114,24 @@ func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.
 	h.deps.Logger.Infof("VMDelete handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMDelete); err != nil {
-		return &api.VMDeleteInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMDelete, ctx)
+		return res.(api.VMDeleteRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMDelete Request: %v", err)
-		return &api.VMDeleteInternalServerError{
-			Message: "Failed to marshal VMDelete Request",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMDelete Request",
+		}, constants.VMDelete, ctx)
+		return res.(api.VMDeleteRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMDelete, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VMDelete Request: %v", vmRequesterr)
-		return &api.VMDeleteInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMDelete, ctx)
+		return res.(api.VMDeleteRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -150,24 +146,25 @@ func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (
 	h.deps.Logger.Infof("VMPowerOff handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMPowerOff); err != nil {
-		return &api.VMPowerOffInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMPowerOff, ctx)
+		return res.(api.VMPowerOffRes), nil
+
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerOff Request: %v", err)
-		return &api.VMPowerOffInternalServerError{
-			Message: "Failed to marshal VMPowerOff Request",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   err.Error(),
+		}, constants.VMPowerOff, ctx)
+		return res.(api.VMPowerOffRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMPowerOff, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VMPowerOff Request: %v", vmRequesterr)
-		return &api.VMPowerOffInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOff, ctx)
+		return res.(api.VMPowerOffRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -183,25 +180,25 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 	h.deps.Logger.Infof("VMPowerOn handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMPowerOn); err != nil {
-		return &api.VMPowerOnInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMPowerOn, ctx)
+		return res.(api.VMPowerOnRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerOn params: %v", err)
-		return &api.VMPowerOnInternalServerError{
-			Message: "Failed to marshal VMPowerOn params",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMPowerOn params",
+		}, constants.VMPowerOn, ctx)
+		return res.(api.VMPowerOnRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMPowerOn, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power on request: %v", vmRequesterr)
-		return &api.VMPowerOnInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOn, ctx)
+		return res.(api.VMPowerOnRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -217,25 +214,25 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 	h.deps.Logger.Infof("VMPowerReset handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMReset); err != nil {
-		return &api.VMPowerResetInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMReset, ctx)
+		return res.(api.VMPowerResetRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMPowerReset params: %v", err)
-		return &api.VMPowerResetInternalServerError{
-			Message: "Failed to marshal VMPowerReset params",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMPowerReset params",
+		}, constants.VMReset, ctx)
+		return res.(api.VMPowerResetRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMReset, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power reset request: %v", vmRequesterr)
-		return &api.VMPowerResetInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMReset, ctx)
+		return res.(api.VMPowerResetRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -251,25 +248,25 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 	h.deps.Logger.Infof("VMRefresh handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMRefresh); err != nil {
-		return &api.VMRefreshInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMRefresh, ctx)
+		return res.(api.VMRefreshRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMRefresh params: %v", err)
-		return &api.VMRefreshInternalServerError{
-			Message: "Failed to marshal VMRefresh params",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMRefresh params",
+		}, constants.VMRefresh, ctx)
+		return res.(api.VMRefreshRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMRefresh, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM refresh request: %v", vmRequesterr)
-		return &api.VMRefreshInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMRefresh, ctx)
+		return res.(api.VMRefreshRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -285,25 +282,25 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 	h.deps.Logger.Infof("VMRestartGuestOS handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMRestartGuestOS); err != nil {
-		return &api.VMRestartGuestOSInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMRestartGuestOS, ctx)
+		return res.(api.VMRestartGuestOSRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMRestartGuestOS params: %v", err)
-		return &api.VMRestartGuestOSInternalServerError{
-			Message: "Failed to marshal VMRestartGuestOS params",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMRestartGuestOS params",
+		}, constants.VMRestartGuestOS, ctx)
+		return res.(api.VMRestartGuestOSRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMRestartGuestOS, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM restart guest OS request: %v", vmRequesterr)
-		return &api.VMRestartGuestOSInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMRestartGuestOS, ctx)
+		return res.(api.VMRestartGuestOSRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -319,25 +316,25 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 	h.deps.Logger.Infof("VMShutdownGuestOS handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMShutdownGuestOS); err != nil {
-		return &api.VMShutdownGuestOSInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMShutdownGuestOS, ctx)
+		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
 	metadata, err := json.Marshal(params)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to marshal VMShutdownGuestOS params: %v", err)
-		return &api.VMShutdownGuestOSInternalServerError{
-			Message: "Failed to marshal VMShutdownGuestOS params",
-		}, nil
+		res := constants.MapServiceError(dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Failed to marshal VMShutdownGuestOS params",
+		}, constants.VMShutdownGuestOS, ctx)
+		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMShutdownGuestOS, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM shutdown guest OS request: %v", vmRequesterr)
-		return &api.VMShutdownGuestOSInternalServerError{
-			Message: vmRequesterr.Error(),
-		}, nil
+		res := constants.MapServiceError(*vmRequesterr, constants.VMShutdownGuestOS, ctx)
+		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
 	location := constants.VMRequestBasePath + vmRequest.RequestID
@@ -353,27 +350,16 @@ func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVi
 	h.deps.Logger.Infof("GetVirtualMachineRequest handler invoked")
 	vmRequest, err := h.VMService.GetVMRequest(ctx, params.RequestID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return &api.GetVirtualMachineRequestNotFound{
-				Message: "VM request not found",
-			}, nil
-		}
 		h.deps.Logger.Errorf("Failed to get VM request: %v", err)
-		return &api.GetVirtualMachineRequestInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMMachine, ctx)
+		return res.(api.GetVirtualMachineRequestRes), nil
 	}
 
 	deployInstances, deployInstanceserr := h.VMService.GetVMDeployInstances(ctx, params.RequestID)
 	if deployInstanceserr != nil {
 		h.deps.Logger.Warnf("Failed to get VM deploy instances, but continuing execution as they are optional: %v", deployInstanceserr)
-		if errors.Is(deployInstanceserr, gorm.ErrRecordNotFound) {
-			deployInstances = []*modals.VMDeployInstance{} // Initialize with an empty slice
-		} else {
-			return &api.GetVirtualMachineRequestInternalServerError{
-				Message: deployInstanceserr.Error(),
-			}, nil
-		}
+		res := constants.MapServiceError(*deployInstanceserr, constants.VMMachine, ctx)
+		return res.(api.GetVirtualMachineRequestRes), nil
 	}
 
 	apiVMRequest := api.VMRequest{
@@ -417,9 +403,8 @@ func (h *Handler) GetVirtualMachineRequestList(ctx context.Context) (api.GetVirt
 	vmRequests, deployInstances, reqCount, instCount, err := h.VMService.GetAllVMRequestsWithInstances(ctx)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get VM request list: %v", err)
-		return &api.GetVirtualMachineRequestListInternalServerError{
-			Message: err.Error(),
-		}, nil
+		res := constants.MapServiceError(*err, constants.VMMachineList, ctx)
+		return res.(api.GetVirtualMachineRequestListRes), nil
 	}
 
 	// Create the response structure for VM requests
@@ -465,7 +450,7 @@ func (h *Handler) GetVirtualMachineRequestList(ctx context.Context) (api.GetVirt
 }
 
 // validateImage checks if an image exists and returns its path.
-func (h *Handler) validateImage(ctx context.Context, imageID string) (string, error) {
+func (h *Handler) validateImage(ctx context.Context, imageID string) (string, *dto.ApiResponseError) {
 	if !h.deps.Config.App.Application.ValidateClientRequest {
 		return "", nil
 	}
@@ -474,7 +459,10 @@ func (h *Handler) validateImage(ctx context.Context, imageID string) (string, er
 	res, err := imageClient.GetAvailableImages(ctx)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get image %s: %v", imageID, err)
-		return "", err
+		return "", &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   err.Error(),
+		}
 	}
 
 	var matchedImage *imagemanager.HypervisorImage
@@ -487,16 +475,18 @@ func (h *Handler) validateImage(ctx context.Context, imageID string) (string, er
 
 	if matchedImage == nil {
 		h.deps.Logger.Warnf("Image with ID %s not found", imageID)
-		return "", errors.New("image not found for validation")
+		return "", &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "image not found for validation",
+		}
 	}
 
 	h.deps.Logger.Infof("Successfully validated image %s, response: %+v", imageID, matchedImage)
-	return matchedImage.Filename, nil
-
+	return matchedImage.ImageURL, nil
 }
 
 // validateHost checks if a host and cluster are active.
-func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) error {
+func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) *dto.ApiResponseError {
 	if !h.deps.Config.App.Application.ValidateClientRequest {
 		return nil
 	}
@@ -507,7 +497,10 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 	hostRes, err := infraClient.GetHypervisorHosts(ctx)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get host %s: %v", hostID, err)
-		return err
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   err.Error(),
+		}
 	}
 
 	var matchedHost *inframonitor.HypervisorHost
@@ -520,11 +513,17 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 
 	if matchedHost == nil {
 		h.deps.Logger.Warnf("host with ID %s not found", hostID)
-		return errors.New("host not found for validation")
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "host not found for validation",
+		}
 	}
 	if strings.EqualFold(matchedHost.Status, "OK") {
 		h.deps.Logger.Warnf("host status %s", matchedHost.Status)
-		return errors.New("host is not active")
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "host is not active",
+		}
 	}
 	h.deps.Logger.Infof("Successfully validated host %s", hostID)
 
@@ -532,7 +531,10 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 	clusterRes, clustererr := infraClient.GetHypervisorClusters(ctx)
 	if clustererr != nil {
 		h.deps.Logger.Errorf("Failed to get cluster %s: %v", clusterID, clustererr)
-		return clustererr
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   clustererr.Error(),
+		}
 	}
 	var matchedcluster *inframonitor.HypervisorCluster
 	for _, cluster := range clusterRes {
@@ -544,11 +546,17 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 
 	if matchedcluster == nil {
 		h.deps.Logger.Warnf("Cluster with ID %s not found", clusterID)
-		return errors.New("Cluster not found for validation")
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Cluster not found for validation",
+		}
 	}
 	if strings.EqualFold(matchedcluster.Status, "OK") {
 		h.deps.Logger.Warnf("Cluster status %s", matchedcluster.Status)
-		return errors.New("Cluster is not active")
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   "Cluster is not active",
+		}
 	}
 	h.deps.Logger.Infof("Successfully validated cluster %s", clusterID)
 
@@ -556,7 +564,7 @@ func (h *Handler) validateHost(ctx context.Context, hostID, clusterID string) er
 }
 
 // validateVMExists checks if a VM exists using the vm_monitor client.
-func (h *Handler) validateVMExists(ctx context.Context, vmID string, vmOperation constants.OperationType) error {
+func (h *Handler) validateVMExists(ctx context.Context, vmID string, vmOperation constants.OperationType) *dto.ApiResponseError {
 	if !h.deps.Config.App.Application.ValidateClientRequest {
 		h.deps.Logger.Infof("validate client request", h.deps.Config.App.Application.ValidateClientRequest)
 		return nil
@@ -570,14 +578,20 @@ func (h *Handler) validateVMExists(ctx context.Context, vmID string, vmOperation
 	// This prevents transient issues with the vm_monitor from blocking the request.
 	if err != nil {
 		h.deps.Logger.Errorf("Error validating VM %s: %v", vmID, err)
-		return err
+		return &dto.ApiResponseError{
+			ErrorCode: constants.InternalServerErrorCode,
+			Message:   err.Error(),
+		}
 	}
 	switch vmOperation {
 	case constants.VMReconfigure:
 		h.deps.Logger.Warnf("VM status: %s", res.Powerstate)
 		if strings.EqualFold(string(constants.OperationType(res.Powerstate)), string(constants.VMPowerOff)) {
 			h.deps.Logger.Warnf("VM %s is powered off and cannot be reconfigured", vmID)
-			return errors.New("VM is powered off and cannot be reconfigured")
+			return &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "VM is powered off and cannot be reconfigured",
+			}
 		}
 	}
 

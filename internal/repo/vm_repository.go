@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"errors"
+	dto "vm/internal/dtos"
 	"vm/internal/modals"
 	"vm/pkg/cinterface"
 	"vm/pkg/constants"
@@ -13,11 +14,11 @@ import (
 
 //go:generate mockgen -source=vm_repository.go -destination=mock/vm_repositoryMock.go
 type VMRepository interface {
-	CreateVMRequest(ctx context.Context, req *modals.VMRequest) error
-	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error)
-	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error)
-	CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) error
-	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error)
+	CreateVMRequest(ctx context.Context, req *modals.VMRequest) *dto.ApiResponseError
+	GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, *dto.ApiResponseError)
+	GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, *dto.ApiResponseError)
+	CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) *dto.ApiResponseError
+	GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, *dto.ApiResponseError)
 }
 
 // vmRepository implements the VMRepository interface.
@@ -35,7 +36,7 @@ func NewVMRepository(db db.Database, logger cinterface.Logger) VMRepository {
 }
 
 // CreateVMRequest creates a new VMRequest record in the database.
-func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMRequest) error {
+func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMRequest) *dto.ApiResponseError {
 	r.logger.Info(constants.MySql, constants.Insert, "CreateVMRequest repository function invoked", nil)
 	db := r.db.GetReader()
 
@@ -44,7 +45,7 @@ func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMReques
 		r.logger.Error(constants.MySql, constants.Insert, "Failed to create VMRequest", map[constants.ExtraKey]interface{}{
 			"error": result.Error.Error(),
 		})
-		return result.Error
+		return &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: result.Error.Error()}
 	}
 
 	r.logger.Info(constants.MySql, constants.Insert, "VMRequest created successfully", map[constants.ExtraKey]interface{}{
@@ -55,7 +56,7 @@ func (r *vmRepository) CreateVMRequest(ctx context.Context, req *modals.VMReques
 }
 
 // GetVMRequest retrieves a VMRequest record from the database by its ID.
-func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, error) {
+func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*modals.VMRequest, *dto.ApiResponseError) {
 	r.logger.Info(constants.MySql, constants.Select, "GetVMRequest repository function invoked", nil)
 	db := r.db.GetReader()
 
@@ -65,7 +66,10 @@ func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*mod
 		r.logger.Error(constants.MySql, constants.Select, "Failed to get VMRequest", map[constants.ExtraKey]interface{}{
 			"error": result.Error.Error(),
 		})
-		return nil, result.Error
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, &dto.ApiResponseError{ErrorCode: constants.SQLRecordNotFoundErrorCode, Message: "VMRequest not found"}
+		}
+		return nil, &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: result.Error.Error()}
 	}
 
 	r.logger.Info(constants.MySql, constants.Select, "VMRequest retrieved successfully", map[constants.ExtraKey]interface{}{
@@ -76,7 +80,7 @@ func (r *vmRepository) GetVMRequest(ctx context.Context, requestID string) (*mod
 }
 
 // GetVMDeployInstances retrieves all VMDeployInstance records from the database by request ID.
-func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, error) {
+func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID string) ([]*modals.VMDeployInstance, *dto.ApiResponseError) {
 	r.logger.Info(constants.MySql, constants.Select, "GetVMDeployInstances repository function invoked", nil)
 	db := r.db.GetReader()
 
@@ -86,7 +90,10 @@ func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID strin
 		r.logger.Error(constants.MySql, constants.Select, "Failed to get VMDeployInstances", map[constants.ExtraKey]interface{}{
 			"error": result.Error.Error(),
 		})
-		return nil, result.Error
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, &dto.ApiResponseError{ErrorCode: constants.SQLRecordNotFoundErrorCode, Message: "VMDeployInstances not found"}
+		}
+		return nil, &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: result.Error.Error()}
 	}
 
 	r.logger.Info(constants.MySql, constants.Select, "VMDeployInstances retrieved successfully", map[constants.ExtraKey]interface{}{
@@ -97,7 +104,7 @@ func (r *vmRepository) GetVMDeployInstances(ctx context.Context, requestID strin
 	return instances, nil
 }
 
-func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) error {
+func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, instances []modals.VMDeployInstance) *dto.ApiResponseError {
 	r.logger.Info(constants.MySql, constants.Insert, "CreateVMDeployInstances repository function invoked", map[constants.ExtraKey]interface{}{
 		"requestID": instances[0].RequestID,
 		"count":     len(instances),
@@ -109,7 +116,7 @@ func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, instances []
 		r.logger.Error(constants.MySql, constants.Insert, "Failed to create VMDeployInstances", map[constants.ExtraKey]interface{}{
 			"error": result.Error.Error(),
 		})
-		return result.Error
+		return &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: result.Error.Error()}
 	}
 
 	r.logger.Info(constants.MySql, constants.Insert, "VMDeployInstances created successfully", map[constants.ExtraKey]interface{}{
@@ -119,7 +126,7 @@ func (r *vmRepository) CreateVMDeployInstances(ctx context.Context, instances []
 	return nil
 }
 
-func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, error) {
+func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*modals.VMRequest, []*modals.VMDeployInstance, *dto.ApiResponseError) {
 	var requests []*modals.VMRequest
 	db := r.db.GetReader()
 
@@ -127,7 +134,7 @@ func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*mo
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			requests = []*modals.VMRequest{} // return empty slice
 		} else {
-			return nil, nil, err
+			return nil, nil, &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: err.Error()}
 		}
 
 	}
@@ -137,7 +144,7 @@ func (r *vmRepository) GetAllVMRequestsWithInstances(ctx context.Context) ([]*mo
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			instances = []*modals.VMDeployInstance{} // return empty slice
 		} else {
-			return nil, nil, err
+			return nil, nil, &dto.ApiResponseError{ErrorCode: constants.InternalServerErrorCode, Message: err.Error()}
 		}
 
 	}

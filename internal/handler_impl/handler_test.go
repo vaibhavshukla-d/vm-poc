@@ -2,15 +2,16 @@ package handler_impl_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
+	dto "vm/internal/dtos"
 	api "vm/internal/gen"
 	"vm/internal/handler_impl"
 	"vm/internal/modals"
 	configmanager "vm/pkg/config-manager"
 	"vm/pkg/constants"
 	"vm/pkg/dependency"
+	"vm/pkg/utils"
 
 	mock_logger "vm/pkg/logger/mock"
 
@@ -20,7 +21,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
 
 func TestEditVM_ValidateVMExists(t *testing.T) {
@@ -67,12 +67,18 @@ func TestEditVM_ValidateVMExists(t *testing.T) {
 
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(nil, errors.New("create failed"))
-
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 		res, err := handler.EditVM(context.Background(), req, params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.EditVMInternalServerError{}, res)
-		assert.Equal(t, "create failed", res.(*api.EditVMInternalServerError).Message)
+
+		typed := res.(*api.EditVMInternalServerError)
+		assert.Equal(t, constants.InternalServerErrorCode, typed.ErrorCode)
+		assert.Equal(t, "create failed", typed.Message)
+
 	})
 
 }
@@ -176,12 +182,20 @@ func TestHandler_HCIDeployVM(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMDeploy, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.HCIDeployVM(context.Background(), req)
+
 		assert.NoError(t, err)
 		assert.IsType(t, &api.HCIDeployVMInternalServerError{}, res)
-		assert.Equal(t, "create failed", res.(*api.HCIDeployVMInternalServerError).Message)
+
+		typed := res.(*api.HCIDeployVMInternalServerError)
+		assert.Equal(t, constants.InternalServerErrorCode, typed.ErrorCode)
+		assert.Equal(t, "create failed", typed.Message)
+
 	})
 }
 
@@ -229,7 +243,10 @@ func TestHandler_VMDelete(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMDelete, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.VMDelete(context.Background(), params)
 		assert.NoError(t, err)
@@ -282,7 +299,10 @@ func TestHandler_VMPowerOff(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMPowerOff, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.VMPowerOff(context.Background(), params)
 		assert.NoError(t, err)
@@ -335,7 +355,10 @@ func TestHandler_VMPowerOn(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMPowerOn, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.VMPowerOn(context.Background(), params)
 		assert.NoError(t, err)
@@ -388,8 +411,10 @@ func TestHandler_VMPowerReset(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMReset, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
-
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 		res, err := handler.VMPowerReset(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMPowerResetInternalServerError{}, res)
@@ -441,8 +466,10 @@ func TestHandler_VMRefresh(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMRefresh, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
-
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 		res, err := handler.VMRefresh(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.VMRefreshInternalServerError{}, res)
@@ -494,7 +521,10 @@ func TestHandler_VMRestartGuestOS(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMRestartGuestOS, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.VMRestartGuestOS(context.Background(), params)
 		assert.NoError(t, err)
@@ -547,7 +577,10 @@ func TestHandler_VMShutdownGuestOS(t *testing.T) {
 	t.Run("Failure - CreateVMRequest error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			CreateVMRequest(gomock.Any(), constants.VMShutdownGuestOS, constants.StatusNew, gomock.Any()).
-			Return(nil, errors.New("create failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "create failed",
+			})
 
 		res, err := handler.VMShutdownGuestOS(context.Background(), params)
 		assert.NoError(t, err)
@@ -622,18 +655,25 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 	t.Run("Failure - VM request not found", func(t *testing.T) {
 		mockVMService.EXPECT().
 			GetVMRequest(gomock.Any(), requestID).
-			Return(nil, gorm.ErrRecordNotFound)
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.SQLRecordNotFoundErrorCode,
+				Message:   "VM request not found",
+			})
 
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.GetVirtualMachineRequestNotFound{}, res)
 		assert.Equal(t, "VM request not found", res.(*api.GetVirtualMachineRequestNotFound).Message)
+		assert.Equal(t, constants.SQLRecordNotFoundErrorCode, res.(*api.GetVirtualMachineRequestNotFound).ErrorCode)
 	})
 
 	t.Run("Failure - unexpected error from GetVMRequest", func(t *testing.T) {
 		mockVMService.EXPECT().
 			GetVMRequest(gomock.Any(), requestID).
-			Return(nil, errors.New("db failure"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db failure",
+			})
 
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
@@ -655,7 +695,7 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 
 		mockVMService.EXPECT().
 			GetVMDeployInstances(gomock.Any(), requestID).
-			Return(nil, gorm.ErrRecordNotFound)
+			Return([]*modals.VMDeployInstance{}, nil)
 
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
@@ -678,12 +718,16 @@ func TestHandler_GetVirtualMachineRequest(t *testing.T) {
 
 		mockVMService.EXPECT().
 			GetVMDeployInstances(gomock.Any(), requestID).
-			Return(nil, errors.New("deploy lookup failed"))
+			Return(nil, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "deploy lookup failed",
+			})
 
 		res, err := handler.GetVirtualMachineRequest(context.Background(), params)
 		assert.NoError(t, err)
 		assert.IsType(t, &api.GetVirtualMachineRequestInternalServerError{}, res)
 		assert.Equal(t, "deploy lookup failed", res.(*api.GetVirtualMachineRequestInternalServerError).Message)
+		assert.Equal(t, constants.InternalServerErrorCode, res.(*api.GetVirtualMachineRequestInternalServerError).ErrorCode)
 	})
 }
 
@@ -750,17 +794,25 @@ func TestHandler_GetVirtualMachineRequestList(t *testing.T) {
 	t.Run("Failure - service returns error", func(t *testing.T) {
 		mockVMService.EXPECT().
 			GetAllVMRequestsWithInstances(gomock.Any()).
-			Return(nil, nil, 0, 0, errors.New("db failure"))
+			Return(nil, nil, 0, 0, &dto.ApiResponseError{
+				ErrorCode: constants.InternalServerErrorCode,
+				Message:   "db failure",
+			})
 
 		res, err := handler.GetVirtualMachineRequestList(context.Background())
 		assert.NoError(t, err)
 		assert.IsType(t, &api.GetVirtualMachineRequestListInternalServerError{}, res)
-		assert.Equal(t, "db failure", res.(*api.GetVirtualMachineRequestListInternalServerError).Message)
+
+		typed := res.(*api.GetVirtualMachineRequestListInternalServerError)
+		assert.Equal(t, constants.InternalServerErrorCode, typed.ErrorCode)
+		assert.Equal(t, "db failure", typed.Message)
+
 	})
 }
 
 func TestSecurityHandler_HandleBearer(t *testing.T) {
-	handler := handler_impl.NewSecurityHandler()
+	mockLogger := &mock_logger.StubLogger{}
+	handler := handler_impl.NewSecurityHandler(mockLogger)
 	ctx := context.Background()
 	op := api.OperationName("VMRefresh")
 
@@ -772,11 +824,38 @@ func TestSecurityHandler_HandleBearer(t *testing.T) {
 		assert.EqualError(t, err, "Missing Bearer token")
 	})
 
-	t.Run("Success - valid token", func(t *testing.T) {
-		bearer := api.Bearer{Token: "valid-token"}
+	t.Run("Failure - invalid token format", func(t *testing.T) {
+		bearer := api.Bearer{Token: "invalid-token"}
 		newCtx, err := handler.HandleBearer(ctx, op, bearer)
 
 		assert.NoError(t, err)
 		assert.Equal(t, ctx, newCtx)
 	})
+
+	t.Run("Success - valid token with id", func(t *testing.T) {
+		bearer := api.Bearer{
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWQiOiIxMjNlZmUyMzIzZXIiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyfQ.zVdGW_T3sBFHYieKeawwq2znn87HUMU8qWjTQ7Ni9vw",
+		}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.NoError(t, err)
+
+		// Check if workspace_id is set in context
+		val := newCtx.Value(utils.WorkspaceIDKey)
+		assert.Equal(t, "123efe2323er", val)
+	})
+	t.Run("Success - valid token without id", func(t *testing.T) {
+		// Token with no "id" claim
+		bearer := api.Bearer{
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJyb2xlIjoiYWRtaW4ifQ.",
+		}
+		newCtx, err := handler.HandleBearer(ctx, op, bearer)
+
+		assert.NoError(t, err)
+
+		// workspace_id should not be set
+		val := newCtx.Value(utils.WorkspaceIDKey)
+		assert.Nil(t, val)
+	})
+
 }
