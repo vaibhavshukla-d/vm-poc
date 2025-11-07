@@ -7,6 +7,9 @@ type ExtraKey string
 type OperationType string
 type RequestStatus string
 type VMDeployStatus string
+type ContextKey string
+
+const BearerTokenKey ContextKey = "bearer_token"
 
 const (
 	General         Category = "General"

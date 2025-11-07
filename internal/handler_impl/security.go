@@ -26,6 +26,7 @@ func (h *SecurityHandler) HandleBearer(ctx context.Context, operationName api.Op
 		h.logger.Error(constants.General, constants.Api, "Missing Bearer token", nil)
 		return nil, errors.New("Missing Bearer token")
 	}
+	ctx = context.WithValue(ctx, constants.BearerTokenKey, t.Token)
 
 	// Parse token without verifying signature (for testing only)
 	token, _, err := new(jwt.Parser).ParseUnverified(t.Token, jwt.MapClaims{})
