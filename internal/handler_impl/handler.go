@@ -33,7 +33,7 @@ func NewHandler(vmService service.VMService, deps *dependency.Dependency) *Handl
 // EditVM implements the EditVM operation
 func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVMParams) (api.EditVMRes, error) {
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMReconfigure); err != nil {
-		res := constants.MapServiceError(*err, constants.VMReconfigure)
+		res := constants.MapServiceError(*err, constants.VMReconfigure, ctx)
 		return res.(api.EditVMRes), nil
 	}
 
@@ -43,13 +43,13 @@ func (h *Handler) EditVM(ctx context.Context, req *api.EditVM, params api.EditVM
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal EditVm Request",
-		}, constants.VMReconfigure)
+		}, constants.VMReconfigure, ctx)
 		return res.(api.EditVMRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMReconfigure, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to marshal EditVm Request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMReconfigure)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMReconfigure, ctx)
 		return res.(api.EditVMRes), nil
 	}
 
@@ -68,14 +68,14 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 	// Validate image and get image path
 	imagePath, err := h.validateImage(ctx, req.ImageSource.Value.ImageId.Value)
 	if err != nil {
-		res := constants.MapServiceError(*err, constants.VMDeploy)
+		res := constants.MapServiceError(*err, constants.VMDeploy, ctx)
 		return res.(api.HCIDeployVMRes), nil
 	}
 	req.ImageSource.Value.ImageName = api.NewOptString(imagePath)
 
 	// Validate host and cluster
 	if err := h.validateHost(ctx, req.Destination.Value.HostId.Value, req.Destination.Value.ClusterId.Value); err != nil {
-		res := constants.MapServiceError(*err, constants.VMDeploy)
+		res := constants.MapServiceError(*err, constants.VMDeploy, ctx)
 		return res.(api.HCIDeployVMRes), nil
 	}
 
@@ -87,7 +87,7 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal HCIDeployVM Request",
-		}, constants.VMDeploy)
+		}, constants.VMDeploy, ctx)
 		return res.(api.HCIDeployVMRes), nil
 	}
 
@@ -95,7 +95,7 @@ func (h *Handler) HCIDeployVM(ctx context.Context, req *api.HCIDeployVM) (api.HC
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMDeploy, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM Deploy request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMDeploy)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMDeploy, ctx)
 		return res.(api.HCIDeployVMRes), nil
 	}
 
@@ -114,7 +114,7 @@ func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.
 	h.deps.Logger.Infof("VMDelete handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMDelete); err != nil {
-		res := constants.MapServiceError(*err, constants.VMDelete)
+		res := constants.MapServiceError(*err, constants.VMDelete, ctx)
 		return res.(api.VMDeleteRes), nil
 	}
 
@@ -124,13 +124,13 @@ func (h *Handler) VMDelete(ctx context.Context, params api.VMDeleteParams) (api.
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMDelete Request",
-		}, constants.VMDelete)
+		}, constants.VMDelete, ctx)
 		return res.(api.VMDeleteRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMDelete, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VMDelete Request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMDelete)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMDelete, ctx)
 		return res.(api.VMDeleteRes), nil
 	}
 
@@ -146,7 +146,7 @@ func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (
 	h.deps.Logger.Infof("VMPowerOff handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMPowerOff); err != nil {
-		res := constants.MapServiceError(*err, constants.VMPowerOff)
+		res := constants.MapServiceError(*err, constants.VMPowerOff, ctx)
 		return res.(api.VMPowerOffRes), nil
 
 	}
@@ -157,13 +157,13 @@ func (h *Handler) VMPowerOff(ctx context.Context, params api.VMPowerOffParams) (
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   err.Error(),
-		}, constants.VMPowerOff)
+		}, constants.VMPowerOff, ctx)
 		return res.(api.VMPowerOffRes), nil
 	}
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMPowerOff, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VMPowerOff Request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOff)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOff, ctx)
 		return res.(api.VMPowerOffRes), nil
 	}
 
@@ -180,7 +180,7 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 	h.deps.Logger.Infof("VMPowerOn handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMPowerOn); err != nil {
-		res := constants.MapServiceError(*err, constants.VMPowerOn)
+		res := constants.MapServiceError(*err, constants.VMPowerOn, ctx)
 		return res.(api.VMPowerOnRes), nil
 	}
 
@@ -190,14 +190,14 @@ func (h *Handler) VMPowerOn(ctx context.Context, params api.VMPowerOnParams) (ap
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMPowerOn params",
-		}, constants.VMPowerOn)
+		}, constants.VMPowerOn, ctx)
 		return res.(api.VMPowerOnRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMPowerOn, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power on request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOn)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMPowerOn, ctx)
 		return res.(api.VMPowerOnRes), nil
 	}
 
@@ -214,7 +214,7 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 	h.deps.Logger.Infof("VMPowerReset handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMReset); err != nil {
-		res := constants.MapServiceError(*err, constants.VMReset)
+		res := constants.MapServiceError(*err, constants.VMReset, ctx)
 		return res.(api.VMPowerResetRes), nil
 	}
 
@@ -224,14 +224,14 @@ func (h *Handler) VMPowerReset(ctx context.Context, params api.VMPowerResetParam
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMPowerReset params",
-		}, constants.VMReset)
+		}, constants.VMReset, ctx)
 		return res.(api.VMPowerResetRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMReset, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM power reset request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMReset)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMReset, ctx)
 		return res.(api.VMPowerResetRes), nil
 	}
 
@@ -248,7 +248,7 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 	h.deps.Logger.Infof("VMRefresh handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMRefresh); err != nil {
-		res := constants.MapServiceError(*err, constants.VMRefresh)
+		res := constants.MapServiceError(*err, constants.VMRefresh, ctx)
 		return res.(api.VMRefreshRes), nil
 	}
 
@@ -258,14 +258,14 @@ func (h *Handler) VMRefresh(ctx context.Context, params api.VMRefreshParams) (ap
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMRefresh params",
-		}, constants.VMRefresh)
+		}, constants.VMRefresh, ctx)
 		return res.(api.VMRefreshRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMRefresh, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM refresh request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMRefresh)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMRefresh, ctx)
 		return res.(api.VMRefreshRes), nil
 	}
 
@@ -282,7 +282,7 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 	h.deps.Logger.Infof("VMRestartGuestOS handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMRestartGuestOS); err != nil {
-		res := constants.MapServiceError(*err, constants.VMRestartGuestOS)
+		res := constants.MapServiceError(*err, constants.VMRestartGuestOS, ctx)
 		return res.(api.VMRestartGuestOSRes), nil
 	}
 
@@ -292,14 +292,14 @@ func (h *Handler) VMRestartGuestOS(ctx context.Context, params api.VMRestartGues
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMRestartGuestOS params",
-		}, constants.VMRestartGuestOS)
+		}, constants.VMRestartGuestOS, ctx)
 		return res.(api.VMRestartGuestOSRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMRestartGuestOS, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM restart guest OS request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMRestartGuestOS)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMRestartGuestOS, ctx)
 		return res.(api.VMRestartGuestOSRes), nil
 	}
 
@@ -316,7 +316,7 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 	h.deps.Logger.Infof("VMShutdownGuestOS handler invoked")
 
 	if err := h.validateVMExists(ctx, string(params.VMID), constants.VMShutdownGuestOS); err != nil {
-		res := constants.MapServiceError(*err, constants.VMShutdownGuestOS)
+		res := constants.MapServiceError(*err, constants.VMShutdownGuestOS, ctx)
 		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
@@ -326,14 +326,14 @@ func (h *Handler) VMShutdownGuestOS(ctx context.Context, params api.VMShutdownGu
 		res := constants.MapServiceError(dto.ApiResponseError{
 			ErrorCode: constants.InternalServerErrorCode,
 			Message:   "Failed to marshal VMShutdownGuestOS params",
-		}, constants.VMShutdownGuestOS)
+		}, constants.VMShutdownGuestOS, ctx)
 		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
 	vmRequest, vmRequesterr := h.VMService.CreateVMRequest(ctx, constants.VMShutdownGuestOS, constants.StatusNew, string(metadata))
 	if vmRequesterr != nil {
 		h.deps.Logger.Errorf("Failed to create VM shutdown guest OS request: %v", vmRequesterr)
-		res := constants.MapServiceError(*vmRequesterr, constants.VMShutdownGuestOS)
+		res := constants.MapServiceError(*vmRequesterr, constants.VMShutdownGuestOS, ctx)
 		return res.(api.VMShutdownGuestOSRes), nil
 	}
 
@@ -351,14 +351,14 @@ func (h *Handler) GetVirtualMachineRequest(ctx context.Context, params api.GetVi
 	vmRequest, err := h.VMService.GetVMRequest(ctx, params.RequestID)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get VM request: %v", err)
-		res := constants.MapServiceError(*err, constants.VMMachine)
+		res := constants.MapServiceError(*err, constants.VMMachine, ctx)
 		return res.(api.GetVirtualMachineRequestRes), nil
 	}
 
 	deployInstances, deployInstanceserr := h.VMService.GetVMDeployInstances(ctx, params.RequestID)
 	if deployInstanceserr != nil {
 		h.deps.Logger.Warnf("Failed to get VM deploy instances, but continuing execution as they are optional: %v", deployInstanceserr)
-		res := constants.MapServiceError(*deployInstanceserr, constants.VMMachine)
+		res := constants.MapServiceError(*deployInstanceserr, constants.VMMachine, ctx)
 		return res.(api.GetVirtualMachineRequestRes), nil
 	}
 
@@ -403,7 +403,7 @@ func (h *Handler) GetVirtualMachineRequestList(ctx context.Context) (api.GetVirt
 	vmRequests, deployInstances, reqCount, instCount, err := h.VMService.GetAllVMRequestsWithInstances(ctx)
 	if err != nil {
 		h.deps.Logger.Errorf("Failed to get VM request list: %v", err)
-		res := constants.MapServiceError(*err, constants.VMMachineList)
+		res := constants.MapServiceError(*err, constants.VMMachineList, ctx)
 		return res.(api.GetVirtualMachineRequestListRes), nil
 	}
 
@@ -482,7 +482,7 @@ func (h *Handler) validateImage(ctx context.Context, imageID string) (string, *d
 	}
 
 	h.deps.Logger.Infof("Successfully validated image %s, response: %+v", imageID, matchedImage)
-	return matchedImage.ImageURL.String(), nil
+	return matchedImage.ImageURL, nil
 }
 
 // validateHost checks if a host and cluster are active.

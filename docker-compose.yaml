@@ -26,7 +26,7 @@ services:
 
       # App behavior
       - CLIENT_URL=http://app:8080
-      - VALIDATE_CLIENT_REQUEST=true
+      - VALIDATE_CLIENT_REQUEST=false
 
     depends_on:
       db:

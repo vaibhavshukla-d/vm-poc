@@ -1,6 +1,7 @@
 package constants
 
 import (
+	"context"
 	"net/http"
 	dto "vm/internal/dtos"
 	api "vm/internal/gen"
@@ -79,7 +80,7 @@ var responseRegistry = map[OperationType]map[int]func(api.ErrorResponse) any{
 	},
 }
 
-func MapServiceError(err dto.ApiResponseError, Operation OperationType) any {
+func MapServiceError(err dto.ApiResponseError, Operation OperationType, ctx context.Context) any {
 	statusCode, ok := ErrorCodeToStatus[err.ErrorCode]
 	if !ok {
 		statusCode = http.StatusInternalServerError
@@ -87,10 +88,13 @@ func MapServiceError(err dto.ApiResponseError, Operation OperationType) any {
 	}
 
 	errRes := api.ErrorResponse{
-		// DebugId:        uuid.New().String(),
 		ErrorCode:      err.ErrorCode,
 		HttpStatusCode: statusCode,
 		Message:        err.Message,
+	}
+	
+	if reqID, ok := ctx.Value("request-ID").(string); ok {
+		errRes.DebugId = reqID
 	}
 
 	if opMap, ok := responseRegistry[Operation]; ok {

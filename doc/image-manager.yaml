@@ -65,7 +65,6 @@ components:
           example: 0.5
         image_url:
           type: string
-          format: uri
           description: Direct URL to download or access the image.
           example: http://global.api.greenlake.hpe.com/api/images/ubuntu-22.04.ova
       required:

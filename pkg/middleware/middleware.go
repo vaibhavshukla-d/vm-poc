@@ -33,7 +33,7 @@ func RecoveryMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
 						ErrorCode: constants.InternalServerErrorCode,
 						Message:   "internal server error",
 					}
-					res := constants.MapServiceError(err, constants.InternalServerErrorCode).(api.ErrorResponse)
+					res := constants.MapServiceError(err, constants.InternalServerErrorCode, r.Context()).(api.ErrorResponse)
 
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusInternalServerError)
@@ -44,6 +44,3 @@ func RecoveryMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
 		})
 	}
 }
-
-
-
